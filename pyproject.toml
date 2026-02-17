@@ -1,0 +1,11 @@
+[project]
+name = "devopslab-iac"
+version = "0.1.0"
+description = "Homelab infra-as-code"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "ansible>=13.3.0",
+    "ansible-lint>=26.1.1",
+    "pre-commit>=4.5.1",
+]
