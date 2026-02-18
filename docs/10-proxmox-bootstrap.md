@@ -1,8 +1,8 @@
-# 10 - Proxmox Bootstrap and Upgrade
+# 10 - Proxmox Bootstrap, Tweaks, and Upgrade
 
 ## Purpose
 
-This document explains how the current Ansible scope works for Proxmox host bootstrap and upgrade.
+This document explains how the current Ansible scope works for Proxmox host bootstrap, tweaks, and upgrade.
 
 It is written for human operators and AI agents (Codex/Claude) that need to understand both:
 
@@ -18,11 +18,11 @@ The automation is split into four layers:
 1. inventory: defines target hosts (`proxmox` group)
 2. playbook: selects hosts and gates execution via tags
 3. role: `proxmox` role orchestrates task files
-4. task files: `bootstrap.yml` and `upgrade.yml`
+4. task files: `bootstrap.yml`, `tweaks.yml`, and `upgrade.yml`
 
 ### Why tag-gated execution exists
 
-The playbook role include is tagged with `never`, `bootstrap`, `upgrade`.
+The playbook role include is tagged with `never`, `bootstrap`, `tweaks`, `upgrade`.
 This prevents accidental full runs and enforces explicit intent.
 
 ## Current File Map
@@ -37,6 +37,7 @@ ansible/
     └── tasks/
         ├── main.yml
         ├── bootstrap.yml
+        ├── tweaks.yml
         └── upgrade.yml
 ```
 
@@ -85,12 +86,27 @@ The enterprise repo files are enforced with `state: absent`, so if they reappear
   - package state changed
   - reboot-required file exists
 
+## Tweaks Behavior
+
+### What tweaks does
+
+`tweaks` currently applies:
+
+- Proxmox UI subscription nag patch in `proxmoxlib.js`
+- conditional `pveproxy` restart when the patch changes the file
+
+### Operational note
+
+After the change, browser cache may still show old UI content.
+Force-refresh the browser if needed.
+
 ## Execution Commands
 
 ### Preferred Make targets
 
 ```bash
 make ansible-proxmox-bootstrap
+make ansible-proxmox-tweaks
 make ansible-proxmox-upgrade
 ```
 
@@ -99,6 +115,7 @@ make ansible-proxmox-upgrade
 ```bash
 cd ansible
 uv run ansible-playbook playbooks/proxmox.yml -t bootstrap
+uv run ansible-playbook playbooks/proxmox.yml -t tweaks
 uv run ansible-playbook playbooks/proxmox.yml -t upgrade
 ```
 
@@ -141,7 +158,7 @@ uv run ansible-playbook playbooks/proxmox.yml -t bootstrap -e @vars/lab.yml
 
 ```json
 {
-  "scope": "Ansible Proxmox bootstrap/upgrade only",
+  "scope": "Ansible Proxmox bootstrap/tweaks/upgrade only",
   "required_checks": [
     "make lint",
     "uv run ansible-lint ansible",

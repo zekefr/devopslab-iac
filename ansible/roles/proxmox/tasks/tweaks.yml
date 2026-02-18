@@ -1,0 +1,44 @@
+---
+# tweaks tasks for proxmox
+
+- name: Proxmox UI tweaks
+  tags:
+    - tweaks
+
+  block:
+
+    - name: Check proxmoxlib path
+      ansible.builtin.stat:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+      register: proxmox_proxmoxlib_js_stat
+
+    - name: Read proxmoxlib content
+      ansible.builtin.slurp:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+      register: proxmox_proxmoxlib_js_raw
+      when:
+        - proxmox_proxmoxlib_js_stat.stat.exists
+
+    - name: Disable subscription nag in Proxmox UI
+      ansible.builtin.replace:
+        path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+        regexp: "res\\.data\\.status\\.toLowerCase\\(\\)\\s*!==\\s*'active'"
+        replace: "false"
+        backup: true
+      notify: Restart pveproxy
+      when:
+        - proxmox_proxmoxlib_js_stat.stat.exists
+        - (proxmox_proxmoxlib_js_raw.content | b64decode | regex_search("res\\.data\\.status\\.toLowerCase\\(\\)\\s*!==\\s*'active'")) is not none
+
+    - name: Inform when subscription nag pattern is not found
+      ansible.builtin.debug:
+        msg: "Skipping subscription nag tweak: expected pattern was not found in proxmoxlib.js (file may already be patched or upstream content changed)."
+      when:
+        - proxmox_proxmoxlib_js_stat.stat.exists
+        - (proxmox_proxmoxlib_js_raw.content | b64decode | regex_search("res\\.data\\.status\\.toLowerCase\\(\\)\\s*!==\\s*'active'")) is none
+
+    - name: Inform when proxmoxlib is missing
+      ansible.builtin.debug:
+        msg: "Skipping subscription nag tweak: proxmoxlib.js not found on target host."
+      when:
+        - not proxmox_proxmoxlib_js_stat.stat.exists

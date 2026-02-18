@@ -10,3 +10,8 @@
   ansible.builtin.include_tasks: upgrade.yml
   tags:
     - upgrade
+
+- name: Include tweaks
+  ansible.builtin.include_tasks: tweaks.yml
+  tags:
+    - tweaks
