@@ -1,0 +1,12 @@
+---
+# main tasks for proxmox
+
+- name: Include bootstrap
+  ansible.builtin.include_tasks: bootstrap.yml
+  tags:
+    - bootstrap
+
+- name: Include upgrade
+  ansible.builtin.include_tasks: upgrade.yml
+  tags:
+    - upgrade

@@ -1,0 +1,21 @@
+---
+- name: Proxmox configuration
+  hosts: proxmox
+  gather_facts: true
+
+  tasks:
+
+    - name: Reminder
+      ansible.builtin.debug:
+        msg: "This playbook must be execute with tags, otherwise it will do nothing"
+      run_once: true
+      tags:
+        - always
+
+    - name: Include proxmox configuration
+      ansible.builtin.include_role:
+        name: proxmox
+      tags:
+        - never
+        - bootstrap
+        - upgrade

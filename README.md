@@ -6,7 +6,7 @@ This repository contains the infrastructure definition for a personal DevOps lab
 based on:
 
 - Proxmox VE (PVE 9.x)
-- Ansible (host bootstrap & configuration)
+- Ansible (currently: Proxmox host bootstrap & upgrade)
 - Terraform (planned)
 - Talos & Kubernetes (planned)
 - GitOps (planned)
@@ -54,17 +54,27 @@ Run manually:
 make lint
 ```
 
+## Scope (current stage)
+
+- Implemented: tooling + initial Ansible scope for Proxmox host bootstrap/upgrade
+- Planned (not yet implemented): Terraform VM provisioning, Talos/Kubernetes, GitOps
+
+## Documentation
+
+- `docs/00-prereqs.md` - Environment prerequisites, lint workflow, and agent execution model
+- `docs/10-proxmox-bootstrap.md` - Proxmox bootstrap/upgrade concepts, commands, and troubleshooting
+
 ## Repository structure (current stage)
 
 ```text
 .
-├── ansible/        # Ansible code (to be added)
+├── ansible/        # Ansible code
 ├── pyproject.toml  # Python project config (uv)
 ├── uv.lock         # Locked dependencies
 ├── .pre-commit-config.yaml
 ├── .ansible-lint
 ├── Makefile
-└── docs/           # Documentation (to be added and expanded)
+└── docs/           # Documentation
 ```
 
 ## Commit Convention

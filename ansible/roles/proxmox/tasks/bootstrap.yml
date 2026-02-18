@@ -1,0 +1,56 @@
+---
+# bootstrap tasks for proxmox
+
+- name: Bootstrap proxmox
+  tags:
+    - bootstrap
+
+  block:
+
+    - name: Check enterprise repo files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: proxmox_enterprise_repo_files_stat
+      loop:
+        - /etc/apt/sources.list.d/pve-enterprise.sources
+        - /etc/apt/sources.list.d/ceph.sources
+
+    - name: Backup enterprise repo files once
+      ansible.builtin.copy:
+        src: "{{ item.stat.path }}"
+        dest: "{{ item.stat.path }}.disabled"
+        remote_src: true
+        force: false
+      when: item.stat.exists
+      loop: "{{ proxmox_enterprise_repo_files_stat.results }}"
+
+    - name: Ensure enterprise repo files are absent
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/apt/sources.list.d/pve-enterprise.sources
+        - /etc/apt/sources.list.d/ceph.sources
+
+    - name: Add pve-no-subscription repo
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/pve-no-subscription.sources
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ proxmox_repo_url }}
+          Suites: {{ proxmox_suite }}
+          Components: pve-no-subscription
+          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+
+    - name: Apt update
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Ensure apt base packages are present
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present

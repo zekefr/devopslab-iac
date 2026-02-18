@@ -12,6 +12,7 @@ repos:
     hooks:
       - id: ansible-lint
         name: ansible-lint (uv)
-        entry: uv run ansible-lint
+        entry: uv run ansible-lint ansible
         language: system
-        files: ^ansible/
+        pass_filenames: false
+        always_run: true

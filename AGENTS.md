@@ -25,13 +25,13 @@ Do not assume system Python.
 
 ## Scope
 
-At this stage, only tooling setup exists.
-No infrastructure definitions should be assumed.
-Do not create infrastructure code/directories (Ansible, Terraform, Talos, GitOps) unless explicitly requested.
+At this stage, tooling setup and an initial Ansible scope exist.
+The repository now includes Ansible code for Proxmox host bootstrap and upgrade workflows.
+Do not assume or create infrastructure outside this scope unless explicitly requested.
 
 Future additions (not yet implemented):
 
-- Proxmox host bootstrap (Ansible)
+- Expanded Proxmox host configuration (Ansible)
 - VM provisioning (Terraform)
 - Talos Kubernetes cluster
 - GitOps configuration

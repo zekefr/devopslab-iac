@@ -1,0 +1,29 @@
+---
+# upgrade tasks for proxmox
+
+- name: Upgrade proxmox
+  tags:
+    - upgrade
+
+  block:
+
+    - name: Full upgrade
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: full
+        autoremove: true
+        autoclean: true
+      register: proxmox_upgrade_result
+
+    - name: Check if reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: proxmox_reboot_required
+
+    - name: Reboot if needed
+      ansible.builtin.reboot:
+        msg: "Reboot triggered by Ansible after Proxmox upgrade"
+        reboot_timeout: 900
+      when:
+        - proxmox_upgrade_result.changed
+        - proxmox_reboot_required.stat.exists
