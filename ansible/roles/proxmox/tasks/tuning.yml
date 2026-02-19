@@ -1,0 +1,136 @@
+---
+# tuning tasks for proxmox
+
+- name: Proxmox host tuning
+  tags:
+    - tuning
+
+  block:
+
+    - name: Persist ZFS ARC max
+      ansible.builtin.lineinfile:
+        path: /etc/modprobe.d/zfs.conf
+        regexp: "^options zfs zfs_arc_max="
+        line: "options zfs zfs_arc_max={{ proxmox_tuning_zfs_arc_max_bytes }}"
+        create: true
+        mode: "0644"
+      notify: Update initramfs
+
+    - name: Check runtime ZFS ARC max path
+      ansible.builtin.stat:
+        path: /sys/module/zfs/parameters/zfs_arc_max
+      register: proxmox_tuning_zfs_arc_max_sysfs_stat
+
+    - name: Read runtime ZFS ARC max value
+      ansible.builtin.slurp:
+        path: /sys/module/zfs/parameters/zfs_arc_max
+      register: proxmox_tuning_zfs_arc_max_raw
+      when:
+        - proxmox_tuning_zfs_arc_max_sysfs_stat.stat.exists
+
+    - name: Apply runtime ZFS ARC max value
+      ansible.builtin.command: /usr/bin/tee /sys/module/zfs/parameters/zfs_arc_max
+      args:
+        stdin: "{{ proxmox_tuning_zfs_arc_max_bytes | string }}"
+      changed_when: true
+      when:
+        - proxmox_tuning_zfs_arc_max_sysfs_stat.stat.exists
+        - (proxmox_tuning_zfs_arc_max_raw.content | b64decode | trim | int) != (proxmox_tuning_zfs_arc_max_bytes | int)
+
+    - name: Inform when runtime ZFS ARC parameter is missing
+      ansible.builtin.debug:
+        msg: "Skipping runtime ARC tuning: /sys/module/zfs/parameters/zfs_arc_max not found."
+      when:
+        - not proxmox_tuning_zfs_arc_max_sysfs_stat.stat.exists
+
+    - name: Set vm.swappiness
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "{{ proxmox_tuning_vm_swappiness | string }}"
+        state: present
+        reload: true
+
+    - name: Set net.ipv4.ip_forward
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: "{{ proxmox_tuning_net_ipv4_ip_forward | string }}"
+        state: present
+        reload: true
+
+    - name: Ensure br_netfilter loads on boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/proxmox-k3s.conf
+        mode: "0644"
+        content: |
+          br_netfilter
+      when:
+        - proxmox_tuning_enable_k3s_netfilter | bool
+
+    - name: Load br_netfilter module now
+      ansible.builtin.command: /sbin/modprobe br_netfilter
+      changed_when: false
+      when:
+        - proxmox_tuning_enable_k3s_netfilter | bool
+
+    - name: Check bridge netfilter sysctl paths
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: proxmox_tuning_bridge_netfilter_paths_stat
+      loop:
+        - /proc/sys/net/bridge/bridge-nf-call-iptables
+        - /proc/sys/net/bridge/bridge-nf-call-ip6tables
+      when:
+        - proxmox_tuning_enable_k3s_netfilter | bool
+
+    - name: Set net.bridge.bridge-nf-call-iptables
+      ansible.posix.sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: "{{ proxmox_tuning_bridge_nf_call_iptables | string }}"
+        state: present
+        reload: true
+      when:
+        - proxmox_tuning_enable_k3s_netfilter | bool
+        - proxmox_tuning_bridge_netfilter_paths_stat.results[0].stat.exists
+
+    - name: Set net.bridge.bridge-nf-call-ip6tables
+      ansible.posix.sysctl:
+        name: net.bridge.bridge-nf-call-ip6tables
+        value: "{{ proxmox_tuning_bridge_nf_call_ip6tables | string }}"
+        state: present
+        reload: true
+      when:
+        - proxmox_tuning_enable_k3s_netfilter | bool
+        - proxmox_tuning_bridge_netfilter_paths_stat.results[1].stat.exists
+
+    - name: Inform when bridge netfilter sysctl paths are missing
+      ansible.builtin.debug:
+        msg: "Skipping bridge netfilter sysctl tuning: expected /proc/sys/net/bridge paths were not found."
+      when:
+        - proxmox_tuning_enable_k3s_netfilter | bool
+        - (proxmox_tuning_bridge_netfilter_paths_stat.results | map(attribute='stat.exists') | select('equalto', true) | list | length) < 2
+
+    - name: List ZFS pools
+      ansible.builtin.command: zpool list -H -o name
+      register: proxmox_tuning_zpool_list
+      changed_when: false
+
+    - name: Read ZFS autotrim status
+      ansible.builtin.command: "zpool get -H -o value autotrim {{ item }}"
+      register: proxmox_tuning_zpool_autotrim_state
+      changed_when: false
+      loop: "{{ proxmox_tuning_zpool_list.stdout_lines }}"
+      when:
+        - proxmox_tuning_zpool_list.stdout_lines | length > 0
+
+    - name: Set ZFS autotrim
+      ansible.builtin.command: "zpool set autotrim={{ proxmox_tuning_zpool_autotrim }} {{ item.item }}"
+      changed_when: true
+      loop: "{{ proxmox_tuning_zpool_autotrim_state.results }}"
+      when:
+        - item.stdout | trim != proxmox_tuning_zpool_autotrim
+
+    - name: Inform when no ZFS pool is found
+      ansible.builtin.debug:
+        msg: "No ZFS pool detected, skipping autotrim tuning."
+      when:
+        - proxmox_tuning_zpool_list.stdout_lines | length == 0

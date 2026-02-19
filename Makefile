@@ -1,6 +1,6 @@
 ANSIBLE_DIR=ansible
 
-.PHONY: pre-commit-install lint ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks
+.PHONY: pre-commit-install lint ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning
 
 pre-commit-install:
 	uv run pre-commit install
@@ -19,3 +19,7 @@ ansible-proxmox-upgrade:
 ansible-proxmox-tweaks:
 	@echo "Applying Proxmox tweaks"
 	cd $(ANSIBLE_DIR) && uv run ansible-playbook playbooks/proxmox.yml -t 'tweaks'
+
+ansible-proxmox-tuning:
+	@echo "Applying Proxmox tuning"
+	cd $(ANSIBLE_DIR) && uv run ansible-playbook playbooks/proxmox.yml -t 'tuning'

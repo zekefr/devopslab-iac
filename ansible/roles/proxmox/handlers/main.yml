@@ -6,3 +6,8 @@
     state: restarted
   tags:
     - tweaks
+
+- name: Update initramfs
+  ansible.builtin.command: update-initramfs -u -k all
+  tags:
+    - tuning

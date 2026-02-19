@@ -15,3 +15,8 @@
   ansible.builtin.include_tasks: tweaks.yml
   tags:
     - tweaks
+
+- name: Include tuning
+  ansible.builtin.include_tasks: tuning.yml
+  tags:
+    - tuning
