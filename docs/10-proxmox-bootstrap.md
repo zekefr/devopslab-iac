@@ -1,8 +1,8 @@
-# 10 - Proxmox Bootstrap, Tweaks, Tuning, and Upgrade
+# 10 - Proxmox Bootstrap, Tweaks, Tuning, Hardening, and Upgrade
 
 ## Purpose
 
-This document explains how the current Ansible scope works for Proxmox host bootstrap, tweaks, tuning, and upgrade.
+This document explains how the current Ansible scope works for Proxmox host bootstrap, tweaks, tuning, hardening, and upgrade.
 
 It is written for human operators and AI agents (Codex/Claude) that need to understand both:
 
@@ -18,11 +18,11 @@ The automation is split into four layers:
 1. inventory: defines target hosts (`proxmox` group)
 2. playbook: selects hosts and gates execution via tags
 3. role: `proxmox` role orchestrates task files
-4. task files: `bootstrap.yml`, `tweaks.yml`, `tuning.yml`, and `upgrade.yml`
+4. task files: `bootstrap.yml`, `tweaks.yml`, `tuning.yml`, `hardening.yml`, and `upgrade.yml`
 
 ### Why tag-gated execution exists
 
-The playbook role include is tagged with `never`, `bootstrap`, `tweaks`, `tuning`, `upgrade`.
+The playbook role include is tagged with `never`, `bootstrap`, `tweaks`, `tuning`, `hardening`, `upgrade`.
 This prevents accidental full runs and enforces explicit intent.
 
 ## Current File Map
@@ -39,6 +39,7 @@ ansible/
         ├── bootstrap.yml
         ├── tweaks.yml
         ├── tuning.yml
+        ├── hardening.yml
         └── upgrade.yml
 ```
 
@@ -113,6 +114,21 @@ Force-refresh the browser if needed.
 - optional `br_netfilter` + bridge netfilter sysctls for K3s compatibility
 - ZFS `autotrim` enforcement on detected pools
 
+## Hardening Behavior
+
+### What hardening does (first step)
+
+`hardening` currently applies SSH baseline hardening:
+
+- managed SSH drop-in config in `/etc/ssh/sshd_config.d/99-proxmox-hardening.conf`
+- disables password and keyboard-interactive auth
+- keeps root login only via keys (`prohibit-password`)
+- validates SSH config with `sshd -t`
+- reloads SSH service when configuration changes
+- installs and configures `fail2ban` for SSH (`jail.d/proxmox-sshd.local`)
+- applies baseline hardening network sysctl settings (`rp_filter`, redirects, source route, syncookies)
+- configures Proxmox host firewall allowlist for LAN management access
+
 ## Execution Commands
 
 ### Preferred Make targets
@@ -121,6 +137,7 @@ Force-refresh the browser if needed.
 make ansible-proxmox-bootstrap
 make ansible-proxmox-tweaks
 make ansible-proxmox-tuning
+make ansible-proxmox-hardening
 make ansible-proxmox-upgrade
 ```
 
@@ -131,6 +148,7 @@ cd ansible
 uv run ansible-playbook playbooks/proxmox.yml -t bootstrap
 uv run ansible-playbook playbooks/proxmox.yml -t tweaks
 uv run ansible-playbook playbooks/proxmox.yml -t tuning
+uv run ansible-playbook playbooks/proxmox.yml -t hardening
 uv run ansible-playbook playbooks/proxmox.yml -t upgrade
 ```
 
@@ -173,7 +191,7 @@ uv run ansible-playbook playbooks/proxmox.yml -t bootstrap -e @vars/lab.yml
 
 ```json
 {
-  "scope": "Ansible Proxmox bootstrap/tweaks/tuning/upgrade only",
+  "scope": "Ansible Proxmox bootstrap/tweaks/tuning/hardening/upgrade only",
   "required_checks": [
     "make lint",
     "uv run ansible-lint ansible",

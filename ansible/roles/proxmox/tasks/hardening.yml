@@ -1,0 +1,123 @@
+---
+# hardening tasks for proxmox
+
+- name: Proxmox host hardening
+  tags:
+    - hardening
+
+  block:
+
+    - name: Ensure sshd drop-in directory exists
+      ansible.builtin.file:
+        path: /etc/ssh/sshd_config.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Configure SSH hardening drop-in
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/99-proxmox-hardening.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          # Managed by Ansible (proxmox hardening)
+          PermitRootLogin {{ proxmox_hardening_ssh_permit_root_login }}
+          PasswordAuthentication {{ proxmox_hardening_ssh_password_authentication }}
+          KbdInteractiveAuthentication {{ proxmox_hardening_ssh_kbd_interactive_authentication }}
+          PubkeyAuthentication {{ proxmox_hardening_ssh_pubkey_authentication }}
+          MaxAuthTries {{ proxmox_hardening_ssh_max_auth_tries }}
+          LoginGraceTime {{ proxmox_hardening_ssh_login_grace_time }}
+      notify: Reload ssh
+
+    - name: Validate full sshd configuration
+      ansible.builtin.command: /usr/sbin/sshd -t
+      changed_when: false
+
+    - name: Install fail2ban
+      ansible.builtin.apt:
+        name: fail2ban
+        state: present
+      when:
+        - proxmox_hardening_fail2ban_enabled | bool
+
+    - name: Configure fail2ban jail for SSH
+      ansible.builtin.copy:
+        dest: /etc/fail2ban/jail.d/proxmox-sshd.local
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [sshd]
+          enabled = true
+          port = ssh
+          backend = systemd
+          logpath = %(sshd_log)s
+          maxretry = {{ proxmox_hardening_fail2ban_maxretry }}
+          findtime = {{ proxmox_hardening_fail2ban_findtime }}
+          bantime = {{ proxmox_hardening_fail2ban_bantime }}
+          ignoreip = {{ proxmox_hardening_fail2ban_ignoreip | join(' ') }}
+      notify: Restart fail2ban
+      when:
+        - proxmox_hardening_fail2ban_enabled | bool
+
+    - name: Ensure fail2ban service is enabled and running
+      ansible.builtin.service:
+        name: fail2ban
+        enabled: true
+        state: started
+      when:
+        - proxmox_hardening_fail2ban_enabled | bool
+
+    - name: Apply hardening network sysctl settings
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value | string }}"
+        state: present
+        reload: true
+      loop: "{{ proxmox_hardening_sysctl_settings | dict2items }}"
+      when:
+        - proxmox_hardening_sysctl_enabled | bool
+
+    - name: Enable datacenter firewall option
+      ansible.builtin.command: pvesh set /cluster/firewall/options --enable 1
+      changed_when: false
+      when:
+        - proxmox_hardening_firewall_enabled | bool
+
+    - name: Enable node firewall option
+      ansible.builtin.command: "pvesh set /nodes/{{ proxmox_hardening_firewall_node_name }}/firewall/options --enable 1"
+      changed_when: false
+      when:
+        - proxmox_hardening_firewall_enabled | bool
+
+    - name: Configure Proxmox host firewall rules
+      ansible.builtin.copy:
+        dest: "/etc/pve/nodes/{{ proxmox_hardening_firewall_node_name }}/host.fw"
+        owner: root
+        group: www-data
+        mode: "0640"
+        content: |
+          [OPTIONS]
+          enable: 1
+          policy_in: {{ proxmox_hardening_firewall_policy_in }}
+          policy_out: {{ proxmox_hardening_firewall_policy_out }}
+
+          [RULES]
+          IN ACCEPT -source {{ proxmox_hardening_firewall_lan_cidr }} -p tcp -dport {{ proxmox_hardening_firewall_ssh_port }}
+          IN ACCEPT -source {{ proxmox_hardening_firewall_lan_cidr }} -p tcp -dport {{ proxmox_hardening_firewall_pve_ui_port }}
+          {% if proxmox_hardening_firewall_allow_icmp | bool %}
+          IN ACCEPT -source {{ proxmox_hardening_firewall_lan_cidr }} -p icmp
+          {% endif %}
+      notify: Reload pve-firewall
+      when:
+        - proxmox_hardening_firewall_enabled | bool
+
+    - name: Ensure pve-firewall service is enabled and running
+      ansible.builtin.service:
+        name: pve-firewall
+        enabled: true
+        state: started
+      when:
+        - proxmox_hardening_firewall_enabled | bool

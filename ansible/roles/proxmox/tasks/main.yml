@@ -20,3 +20,8 @@
   ansible.builtin.include_tasks: tuning.yml
   tags:
     - tuning
+
+- name: Include hardening
+  ansible.builtin.include_tasks: hardening.yml
+  tags:
+    - hardening

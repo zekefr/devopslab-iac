@@ -1,10 +1,55 @@
 ---
+# Bootstrap
 proxmox_suite: "trixie"
 proxmox_repo_url: "http://download.proxmox.com/debian/pve"
+
+# Tuning - ZFS
 proxmox_tuning_zfs_arc_max_bytes: 8589934592
+proxmox_tuning_zpool_autotrim: "on"
+
+# Tuning - Kernel/Network
 proxmox_tuning_vm_swappiness: 10
 proxmox_tuning_net_ipv4_ip_forward: 1
 proxmox_tuning_enable_k3s_netfilter: true
 proxmox_tuning_bridge_nf_call_iptables: 1
 proxmox_tuning_bridge_nf_call_ip6tables: 1
-proxmox_tuning_zpool_autotrim: "on"
+
+# Hardening - SSH
+proxmox_hardening_ssh_permit_root_login: "prohibit-password"
+proxmox_hardening_ssh_password_authentication: "no"
+proxmox_hardening_ssh_kbd_interactive_authentication: "no"
+proxmox_hardening_ssh_pubkey_authentication: "yes"
+proxmox_hardening_ssh_max_auth_tries: 3
+proxmox_hardening_ssh_login_grace_time: "30s"
+
+# Hardening - Fail2ban
+proxmox_hardening_fail2ban_enabled: true
+proxmox_hardening_fail2ban_maxretry: 5
+proxmox_hardening_fail2ban_findtime: "10m"
+proxmox_hardening_fail2ban_bantime: "1h"
+proxmox_hardening_fail2ban_ignoreip:
+  - "127.0.0.1/8"
+  - "::1"
+
+# Hardening - Proxmox firewall
+proxmox_hardening_firewall_enabled: true
+proxmox_hardening_firewall_node_name: "{{ ansible_hostname }}"
+proxmox_hardening_firewall_lan_cidr: "192.168.1.0/24"
+proxmox_hardening_firewall_ssh_port: 22
+proxmox_hardening_firewall_pve_ui_port: 8006
+proxmox_hardening_firewall_allow_icmp: true
+proxmox_hardening_firewall_policy_in: "DROP"
+proxmox_hardening_firewall_policy_out: "ACCEPT"
+
+# Hardening - Network sysctl
+proxmox_hardening_sysctl_enabled: true
+proxmox_hardening_sysctl_settings:
+  net.ipv4.conf.all.rp_filter: 2
+  net.ipv4.conf.default.rp_filter: 2
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.conf.default.accept_source_route: 0
+  net.ipv4.tcp_syncookies: 1
