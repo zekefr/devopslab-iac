@@ -24,3 +24,7 @@ override.tf.json
 terraform.rc
 *.tfvars
 !*.tfvars.example
+
+# Talos bootstrap local artifacts
+talos/cluster.env
+talos/generated/

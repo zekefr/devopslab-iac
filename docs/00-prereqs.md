@@ -8,6 +8,7 @@ The goal is to keep execution reproducible:
 
 - one Python toolchain (`uv`)
 - one Terraform CLI runtime (`mise`)
+- one Talos/Kubernetes CLI runtime (`mise`)
 - one lint gate (`make lint`)
 - one Ansible quality profile (`basic`)
 
@@ -20,6 +21,8 @@ The goal is to keep execution reproducible:
 - ansible-lint `>= 26.x`
 - pre-commit `>= 4.x`
 - Terraform `1.14.5` (managed by `mise`)
+- talosctl `1.12.4` (managed by `mise`)
+- kubectl `1.35.1` (managed by `mise`)
 
 ### Why `uv run` is mandatory
 
@@ -60,6 +63,8 @@ uv run ansible --version
 uv run ansible-lint --version
 uv run pre-commit --version
 terraform version
+talosctl version --client
+kubectl version --client
 ```
 
 ## Lint Workflow

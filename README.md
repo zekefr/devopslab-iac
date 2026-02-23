@@ -71,6 +71,16 @@ make tf-validate
 make tf-plan
 ```
 
+## Talos/Kubernetes CLI Runtime
+
+Talos and Kubernetes clients are pinned via `mise`:
+
+```bash
+mise install
+talosctl version --client
+kubectl version --client
+```
+
 ## Scope (current stage)
 
 - Implemented:
@@ -86,6 +96,7 @@ make tf-plan
 - `docs/00-prereqs.md` - Environment prerequisites, lint workflow, and agent execution model
 - `docs/10-proxmox-bootstrap.md` - Proxmox bootstrap/tweaks/tuning/hardening/upgrade concepts, commands, and troubleshooting
 - `docs/20-terraform-lab-foundation.md` - Terraform lab foundation, auth model, and execution workflow
+- `docs/30-talos-bootstrap.md` - Talos bootstrap automation inputs, workflow, and execution commands
 
 ## Repository structure (current stage)
 
@@ -93,6 +104,8 @@ make tf-plan
 .
 ├── ansible/        # Ansible code
 ├── terraform/      # Terraform code (lab environment foundation)
+├── talos/          # Talos bootstrap inputs and generated configs
+├── scripts/        # Repository automation scripts
 ├── pyproject.toml  # Python project config (uv)
 ├── mise.toml       # Tool version pinning + Terraform task runners
 ├── uv.lock         # Locked dependencies

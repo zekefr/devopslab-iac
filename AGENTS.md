@@ -32,6 +32,7 @@ Terraform commands should use the pinned runtime from `mise`.
 At this stage, tooling setup and an initial Ansible scope exist.
 The repository now includes Ansible code for Proxmox host bootstrap and upgrade workflows.
 The repository also includes a Terraform lab foundation for Proxmox (provider, auth wiring, lock file, command wrappers, Talos image download, and Talos base template VM).
+Talos bootstrap automation assets are present (`talos/cluster.env` + `scripts/talos-bootstrap.sh` + Make targets), but bootstrap execution is still operator-driven.
 Do not assume or create infrastructure outside this scope unless explicitly requested.
 
 Future additions (not yet implemented):
