@@ -7,7 +7,7 @@ based on:
 
 - Proxmox VE (PVE 9.x)
 - Ansible (currently: Proxmox host bootstrap, tweaks, tuning, hardening, and upgrade)
-- Terraform (planned)
+- Terraform (currently: provider/auth foundation for Proxmox lab environment)
 - Talos & Kubernetes (planned)
 - GitOps (planned)
 
@@ -54,22 +54,45 @@ Run manually:
 make lint
 ```
 
+## Terraform CLI Runtime
+
+Terraform is managed via `mise`:
+
+```bash
+mise install
+terraform version
+```
+
+Use repository targets to avoid running Terraform in the wrong directory:
+
+```bash
+make tf-init
+make tf-validate
+make tf-plan
+```
+
 ## Scope (current stage)
 
-- Implemented: tooling + initial Ansible scope for Proxmox host bootstrap/tweaks/tuning/hardening/upgrade
-- Planned (not yet implemented): Terraform VM provisioning, Talos/Kubernetes, GitOps
+- Implemented:
+  - tooling (`uv`, pre-commit, ansible-lint)
+  - Ansible scope for Proxmox host bootstrap/tweaks/tuning/hardening/upgrade
+  - initial Terraform lab foundation (`bpg/proxmox` provider, auth wiring, lock file, command wrappers)
+- Planned (not yet implemented): Terraform VM provisioning workflow, Talos/Kubernetes bootstrap, GitOps
 
 ## Documentation
 
 - `docs/00-prereqs.md` - Environment prerequisites, lint workflow, and agent execution model
 - `docs/10-proxmox-bootstrap.md` - Proxmox bootstrap/tweaks/tuning/hardening/upgrade concepts, commands, and troubleshooting
+- `docs/20-terraform-lab-foundation.md` - Terraform lab foundation, auth model, and execution workflow
 
 ## Repository structure (current stage)
 
 ```text
 .
 ├── ansible/        # Ansible code
+├── terraform/      # Terraform code (lab environment foundation)
 ├── pyproject.toml  # Python project config (uv)
+├── mise.toml       # Tool version pinning + Terraform task runners
 ├── uv.lock         # Locked dependencies
 ├── .pre-commit-config.yaml
 ├── .ansible-lint

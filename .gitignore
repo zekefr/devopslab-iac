@@ -2,3 +2,25 @@
 __pycache__/
 *.retry
 .cache/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+*.tfvars
+!*.tfvars.example

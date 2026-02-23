@@ -1,0 +1,14 @@
+[tools]
+terraform = "1.14.5"
+
+[tasks.tf-init]
+description = "Init Terraform lab environment"
+run = "terraform -chdir=terraform/environments/lab init"
+
+[tasks.tf-validate]
+description = "Validate Terraform lab environment"
+run = "terraform -chdir=terraform/environments/lab validate"
+
+[tasks.tf-plan]
+description = "Plan Terraform lab environment"
+run = "terraform -chdir=terraform/environments/lab plan"

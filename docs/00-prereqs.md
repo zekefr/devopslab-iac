@@ -7,6 +7,7 @@ This document explains the minimum prerequisites to work safely in this reposito
 The goal is to keep execution reproducible:
 
 - one Python toolchain (`uv`)
+- one Terraform CLI runtime (`mise`)
 - one lint gate (`make lint`)
 - one Ansible quality profile (`basic`)
 
@@ -18,6 +19,7 @@ The goal is to keep execution reproducible:
 - Ansible `>= 13.x`
 - ansible-lint `>= 26.x`
 - pre-commit `>= 4.x`
+- Terraform `1.14.5` (managed by `mise`)
 
 ### Why `uv run` is mandatory
 
@@ -28,6 +30,19 @@ uv run <command>
 ```
 
 Running tools directly from system Python can produce different lint and runtime behavior.
+
+### Why `mise` is used for Terraform
+
+Terraform is pinned in `mise.toml` so all operators/agents run the same binary version.
+
+Use:
+
+```bash
+mise install
+mise run tf-init
+mise run tf-validate
+mise run tf-plan
+```
 
 ## Environment Bootstrap
 
@@ -44,6 +59,7 @@ uv run python --version
 uv run ansible --version
 uv run ansible-lint --version
 uv run pre-commit --version
+terraform version
 ```
 
 ## Lint Workflow
@@ -61,6 +77,16 @@ make lint
 ```
 
 `make lint` is the required check before proposing a commit.
+
+### Terraform checks (lab environment)
+
+```bash
+make tf-init
+make tf-validate
+make tf-plan
+```
+
+Terraform commands are wrapped so they always target `terraform/environments/lab`.
 
 ## Agent-Oriented Execution Model (Codex / Claude)
 
