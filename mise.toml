@@ -12,3 +12,11 @@ run = "terraform -chdir=terraform/environments/lab validate"
 [tasks.tf-plan]
 description = "Plan Terraform lab environment"
 run = "terraform -chdir=terraform/environments/lab plan"
+
+[tasks.tf-apply]
+description = "Apply Terraform lab environment"
+run = "terraform -chdir=terraform/environments/lab apply"
+
+[tasks.tf-apply-auto]
+description = "Apply Terraform lab environment without confirmation"
+run = "terraform -chdir=terraform/environments/lab apply -auto-approve"

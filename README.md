@@ -7,7 +7,7 @@ based on:
 
 - Proxmox VE (PVE 9.x)
 - Ansible (currently: Proxmox host bootstrap, tweaks, tuning, hardening, and upgrade)
-- Terraform (currently: provider/auth foundation for Proxmox lab environment)
+- Terraform (currently: provider/auth foundation + Talos image/template workflow)
 - Talos & Kubernetes (planned)
 - GitOps (planned)
 
@@ -76,7 +76,8 @@ make tf-plan
 - Implemented:
   - tooling (`uv`, pre-commit, ansible-lint)
   - Ansible scope for Proxmox host bootstrap/tweaks/tuning/hardening/upgrade
-  - initial Terraform lab foundation (`bpg/proxmox` provider, auth wiring, lock file, command wrappers)
+  - Terraform lab foundation (`bpg/proxmox` provider, auth wiring, lock file, command wrappers)
+  - Talos image download + Talos base template VM creation in `terraform/environments/lab`
 - Planned (not yet implemented): Terraform VM provisioning workflow, Talos/Kubernetes bootstrap, GitOps
 
 ## Documentation

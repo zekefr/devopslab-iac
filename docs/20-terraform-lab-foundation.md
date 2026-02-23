@@ -18,11 +18,11 @@ Implemented in `terraform/environments/lab`:
 - provider `bpg/proxmox` pinned by `.terraform.lock.hcl`
 - provider auth via environment variables
 - optional insecure TLS toggle via `TF_VAR_proxmox_insecure`
+- Talos raw image download from official release URL
+- Talos base template VM creation (default VMID `9000`)
 
 Not implemented yet:
 
-- Talos image download/import
-- Proxmox VM template creation
 - control plane/worker VM provisioning
 
 ## Auth Model
@@ -61,11 +61,11 @@ These commands call Terraform with `-chdir=terraform/environments/lab` to avoid 
 
 ## Next Step
 
-Phase 1.2 will add Talos image/template automation in Terraform.
+Phase 1.3 will add control plane/worker VM provisioning from the Talos template.
 
 Required inputs to proceed:
 
-1. Talos version to pin
-2. template VM name
-3. storage for downloaded image (usually `local`)
-4. reserved template VMID
+1. control plane and worker counts
+2. per-role CPU/RAM/disk sizing
+3. static network plan (IPs, gateway, DNS, optional VLAN)
+4. naming convention for cluster nodes

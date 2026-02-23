@@ -31,7 +31,7 @@ Terraform commands should use the pinned runtime from `mise`.
 
 At this stage, tooling setup and an initial Ansible scope exist.
 The repository now includes Ansible code for Proxmox host bootstrap and upgrade workflows.
-The repository also includes an initial Terraform foundation for the lab environment (provider, auth wiring, lock file, and command wrappers).
+The repository also includes a Terraform lab foundation for Proxmox (provider, auth wiring, lock file, command wrappers, Talos image download, and Talos base template VM).
 Do not assume or create infrastructure outside this scope unless explicitly requested.
 
 Future additions (not yet implemented):

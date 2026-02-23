@@ -1,0 +1,24 @@
+# Proxmox target
+proxmox_node_name            = "pve"
+proxmox_image_datastore_id   = "local"
+proxmox_vm_disk_datastore_id = "local-lvm"
+proxmox_network_bridge       = "vmbr0"
+proxmox_network_vlan_id      = null
+proxmox_ssh_agent            = false
+proxmox_ssh_username         = "root"
+proxmox_ssh_node_address     = "192.168.1.100"
+proxmox_ssh_node_port        = 22
+proxmox_ssh_private_key_path = "~/.ssh/id_ed25519"
+
+# Talos image/template
+talos_version            = "v1.12.4"
+talos_arch               = "amd64"
+talos_image_content_type = "iso"
+talos_template_name      = "talos-1.12.4-amd64-template"
+talos_template_vmid      = 9000
+
+# Template sizing
+talos_template_cpu_cores    = 2
+talos_template_memory_mb    = 4096
+talos_template_disk_size_gb = 20
+talos_template_tags         = ["lab", "talos", "template"]
