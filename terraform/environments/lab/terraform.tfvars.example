@@ -1,14 +1,14 @@
 # Proxmox target
-proxmox_node_name            = "pve"
+proxmox_node_name            = "pve-lab"
 proxmox_image_datastore_id   = "local"
 proxmox_vm_disk_datastore_id = "local-lvm"
 proxmox_network_bridge       = "vmbr0"
 proxmox_network_vlan_id      = null
 proxmox_ssh_agent            = false
 proxmox_ssh_username         = "root"
-proxmox_ssh_node_address     = "192.168.1.100"
+proxmox_ssh_node_address     = "192.0.2.10"
 proxmox_ssh_node_port        = 22
-proxmox_ssh_private_key_path = "~/.ssh/id_ed25519"
+proxmox_ssh_private_key_path = "~/.ssh/id_ed25519_proxmox"
 
 # Talos image/template
 talos_version            = "v1.12.4"
@@ -22,3 +22,42 @@ talos_template_cpu_cores    = 2
 talos_template_memory_mb    = 4096
 talos_template_disk_size_gb = 20
 talos_template_tags         = ["lab", "talos", "template"]
+
+# Cluster sizing
+k8s_control_plane_cpu_cores = 2
+k8s_control_plane_memory_mb = 6144
+k8s_worker_cpu_cores        = 4
+k8s_worker_memory_mb        = 16384
+
+# Cluster nodes
+k8s_nodes = {
+  cp01 = {
+    role  = "control-plane"
+    ip    = "192.0.2.101"
+    vm_id = 9101
+  }
+  cp02 = {
+    role  = "control-plane"
+    ip    = "192.0.2.102"
+    vm_id = 9102
+  }
+  cp03 = {
+    role  = "control-plane"
+    ip    = "192.0.2.103"
+    vm_id = 9103
+  }
+  wk01 = {
+    role  = "worker"
+    ip    = "192.0.2.111"
+    vm_id = 9104
+  }
+  wk02 = {
+    role  = "worker"
+    ip    = "192.0.2.112"
+    vm_id = 9105
+  }
+}
+
+# Cluster network plan
+k8s_gateway_ipv4 = "192.0.2.1"
+k8s_dns_servers  = ["1.1.1.1"]

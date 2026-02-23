@@ -20,10 +20,12 @@ Implemented in `terraform/environments/lab`:
 - optional insecure TLS toggle via `TF_VAR_proxmox_insecure`
 - Talos raw image download from official release URL
 - Talos base template VM creation (default VMID `9000`)
+- Talos Kubernetes VM provisioning from template (`3` control planes + `2` workers)
 
 Not implemented yet:
 
-- control plane/worker VM provisioning
+- Talos OS machine configuration generation/apply
+- Kubernetes bootstrap and post-bootstrap platform stack
 
 ## Auth Model
 
@@ -61,11 +63,11 @@ These commands call Terraform with `-chdir=terraform/environments/lab` to avoid 
 
 ## Next Step
 
-Phase 1.3 will add control plane/worker VM provisioning from the Talos template.
+Next phase will bootstrap Talos/Kubernetes on the provisioned VMs.
 
 Required inputs to proceed:
 
-1. control plane and worker counts
-2. per-role CPU/RAM/disk sizing
-3. static network plan (IPs, gateway, DNS, optional VLAN)
-4. naming convention for cluster nodes
+1. Talos machine config strategy (generated locally or managed artifact)
+2. API endpoint strategy (temporary direct CP IP vs VIP)
+3. bootstrap order and smoke tests (`talosctl`, `kubectl`)
+4. base add-ons sequencing (CNI, ingress, storage, observability, GitOps)

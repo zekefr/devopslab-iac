@@ -6,6 +6,7 @@ This folder contains the first Terraform building block for Proxmox:
 - API authentication via environment variables
 - Talos image download (`v1.12.4` by default)
 - Talos base VM template creation
+- Talos Kubernetes VM provisioning (3 control planes + 2 workers)
 
 The current scope creates a single Talos template VM.
 
@@ -100,11 +101,16 @@ Common values in this lab:
 - `proxmox_ssh_node_address = "<pve-ip-or-fqdn>"`
 - `proxmox_ssh_agent = false`
 - `proxmox_ssh_private_key_path = "~/.ssh/id_ed25519"`
+- `k8s_gateway_ipv4 = "192.168.1.254"`
+- `k8s_dns_servers = ["8.8.8.8"]`
 
 `talos_image_content_type` is `iso` for Talos compressed images (`raw.zst`).
 This workflow uses `disk.file_id` and requires SSH access to the Proxmox node from the Terraform runner.
 If your SSH agent is not loaded, disable agent and provide `proxmox_ssh_private_key_path`.
 `overwrite` is disabled for the downloaded image because Proxmox reports decompressed file size in datastore, which differs from URL size for compressed artifacts.
+
+`k8s_nodes[*].ip` stores planned static addresses for Talos bootstrap metadata/output.
+Proxmox itself does not assign these IPs at clone time for Talos guests.
 
 ## Temporary fallback (manual `fish` export)
 

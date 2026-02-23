@@ -78,7 +78,8 @@ make tf-plan
   - Ansible scope for Proxmox host bootstrap/tweaks/tuning/hardening/upgrade
   - Terraform lab foundation (`bpg/proxmox` provider, auth wiring, lock file, command wrappers)
   - Talos image download + Talos base template VM creation in `terraform/environments/lab`
-- Planned (not yet implemented): Terraform VM provisioning workflow, Talos/Kubernetes bootstrap, GitOps
+  - Talos Kubernetes VM provisioning from template (`3` control planes + `2` workers)
+- Planned (not yet implemented): Talos/Kubernetes bootstrap, GitOps
 
 ## Documentation
 

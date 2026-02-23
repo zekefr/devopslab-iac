@@ -122,3 +122,53 @@ variable "talos_template_tags" {
   type        = list(string)
   default     = ["lab", "talos", "template"]
 }
+
+variable "k8s_nodes" {
+  description = "Kubernetes node definitions keyed by VM name."
+  type = map(object({
+    role  = string
+    ip    = string
+    vm_id = number
+  }))
+
+  validation {
+    condition     = alltrue([for node in values(var.k8s_nodes) : contains(["control-plane", "worker"], node.role)])
+    error_message = "Each k8s_nodes.role must be either 'control-plane' or 'worker'."
+  }
+}
+
+variable "k8s_control_plane_cpu_cores" {
+  description = "CPU cores for control plane nodes."
+  type        = number
+  default     = 2
+}
+
+variable "k8s_control_plane_memory_mb" {
+  description = "Memory (MB) for control plane nodes."
+  type        = number
+  default     = 6144
+}
+
+variable "k8s_worker_cpu_cores" {
+  description = "CPU cores for worker nodes."
+  type        = number
+  default     = 4
+}
+
+variable "k8s_worker_memory_mb" {
+  description = "Memory (MB) for worker nodes."
+  type        = number
+  default     = 16384
+}
+
+variable "k8s_gateway_ipv4" {
+  description = "Planned IPv4 gateway for Kubernetes nodes."
+  type        = string
+  default     = "192.168.1.254"
+}
+
+variable "k8s_dns_servers" {
+  description = "Planned DNS servers for Kubernetes nodes."
+  type        = list(string)
+  default     = ["8.8.8.8"]
+}

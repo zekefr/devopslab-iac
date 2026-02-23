@@ -37,7 +37,6 @@ Do not assume or create infrastructure outside this scope unless explicitly requ
 Future additions (not yet implemented):
 
 - Expanded Proxmox host configuration (Ansible)
-- VM provisioning (Terraform)
 - Talos Kubernetes cluster
 - GitOps configuration
 

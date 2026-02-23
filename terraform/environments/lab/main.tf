@@ -60,3 +60,44 @@ resource "proxmox_virtual_environment_vm" "talos_template" {
     type = "l26"
   }
 }
+
+resource "proxmox_virtual_environment_vm" "k8s_node" {
+  for_each = var.k8s_nodes
+
+  node_name = var.proxmox_node_name
+  vm_id     = each.value.vm_id
+  name      = each.key
+
+  description = "Talos ${each.value.role} node (planned IP: ${each.value.ip})"
+  tags        = ["lab", "talos", "k8s", each.value.role]
+  template    = false
+  started     = true
+  on_boot     = true
+
+  machine       = "q35"
+  scsi_hardware = "virtio-scsi-single"
+  boot_order    = ["scsi0"]
+
+  clone {
+    vm_id        = proxmox_virtual_environment_vm.talos_template.vm_id
+    node_name    = var.proxmox_node_name
+    datastore_id = var.proxmox_vm_disk_datastore_id
+    full         = true
+  }
+
+  cpu {
+    cores = each.value.role == "control-plane" ? var.k8s_control_plane_cpu_cores : var.k8s_worker_cpu_cores
+    type  = "host"
+  }
+
+  memory {
+    dedicated = each.value.role == "control-plane" ? var.k8s_control_plane_memory_mb : var.k8s_worker_memory_mb
+    floating  = each.value.role == "control-plane" ? var.k8s_control_plane_memory_mb : var.k8s_worker_memory_mb
+  }
+
+  network_device {
+    bridge  = var.proxmox_network_bridge
+    model   = "virtio"
+    vlan_id = var.proxmox_network_vlan_id
+  }
+}
