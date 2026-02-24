@@ -1,4 +1,12 @@
-# 30 - Talos Bootstrap Automation
+# 30 - Talos
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Current Assets](#current-assets)
+- [Configuration File](#configuration-file)
+- [Execution Flow](#execution-flow)
+- [Practical Notes](#practical-notes)
 
 ## Purpose
 

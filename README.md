@@ -94,9 +94,9 @@ kubectl version --client
 ## Documentation
 
 - `docs/00-prereqs.md` - Environment prerequisites, lint workflow, and agent execution model
-- `docs/10-proxmox-bootstrap.md` - Proxmox bootstrap/tweaks/tuning/hardening/upgrade concepts, commands, and troubleshooting
-- `docs/20-terraform-lab-foundation.md` - Terraform lab foundation, auth model, and execution workflow
-- `docs/30-talos-bootstrap.md` - Talos bootstrap automation inputs, workflow, and execution commands
+- `docs/10-proxmox.md` - Proxmox scope, workflows, commands, and troubleshooting
+- `docs/20-terraform.md` - Terraform scope, auth model, and execution workflow
+- `docs/30-talos.md` - Talos scope, bootstrap inputs, and execution workflow
 
 ## Repository structure (current stage)
 

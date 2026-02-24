@@ -1,4 +1,12 @@
-# 20 - Terraform Lab Foundation
+# 20 - Terraform
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Current Status](#current-status)
+- [Auth Model](#auth-model)
+- [Commands](#commands)
+- [Next Step](#next-step)
 
 ## Purpose
 

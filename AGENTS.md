@@ -1,61 +1,81 @@
 # AGENTS.md
 
-This repository follows an incremental infrastructure-as-code approach.
+Operational rules for agents working in this repository.
 
-## Environment
+## Read First
 
-- Python 3.13 (managed via uv)
-- Ansible >= 13.x
-- ansible-lint >= 26.x
-- pre-commit >= 4.x
-- Terraform 1.14.5 (managed via mise)
+Before changing code, read the relevant documentation:
 
-All Python tooling must be executed via:
+- Prerequisites and tooling: [`docs/00-prereqs.md`](docs/00-prereqs.md)
+- Proxmox: [`docs/10-proxmox.md`](docs/10-proxmox.md)
+- Terraform: [`docs/20-terraform.md`](docs/20-terraform.md)
+- Talos: [`docs/30-talos.md`](docs/30-talos.md)
+
+If docs and code differ, prioritize the current code behavior and propose a doc update.
+
+## Runtime and Tooling
+
+- Python runtime is managed by `uv` (Python 3.13).
+- Terraform and cluster CLIs are managed by `mise`.
+- Never assume system-level Python/tooling versions.
+
+Python commands must run via:
 
     uv run <command>
 
-Do not assume system Python.
+Terraform commands should use the pinned runtime from `mise` (directly or via `make`).
 
-Terraform commands should use the pinned runtime from `mise`.
+## Mandatory Validation
 
-## Linting Rules
+Run before proposing a commit:
 
-- Pre-commit must pass before commits
-- Run `make lint` before proposing a commit
-- For Terraform lab checks, run `make tf-init`, `make tf-validate`, and `make tf-plan`
-- Commit messages must follow Conventional Commits (see `README.md`, section "Commit Convention")
-- ansible-lint profile: basic (for now)
-- Excluded paths are defined in `.ansible-lint`
+- `make lint`
 
-## Scope
+Current lint scope includes:
 
-At this stage, tooling setup and an initial Ansible scope exist.
-The repository now includes Ansible code for Proxmox host bootstrap and upgrade workflows.
-The repository also includes a Terraform lab foundation for Proxmox (provider, auth wiring, lock file, command wrappers, Talos image download, and Talos base template VM).
-Talos bootstrap automation assets are present (`talos/cluster.env` + `scripts/talos-bootstrap.sh` + Make targets), but bootstrap execution is still operator-driven.
-Do not assume or create infrastructure outside this scope unless explicitly requested.
+- pre-commit hygiene checks
+- `ansible-lint`
+- `terraform fmt -check`
+- `terraform validate` (lab environment)
+- `tflint` (lab environment)
 
-Future additions (not yet implemented):
+## Terraform Guardrails
 
-- Expanded Proxmox host configuration (Ansible)
-- Talos Kubernetes cluster
-- GitOps configuration
+- Prefer root targets: `make tf-init`, `make tf-validate`, `make tf-plan`.
+- Equivalent tasks exist: `mise run tf-init|tf-validate|tf-plan`.
+- Avoid running bare Terraform from repo root when targeting lab infra.
+- Primary lab root is `terraform/environments/lab`.
 
-Agents should avoid inventing infrastructure that does not yet exist.
+## Talos Guardrails
 
-## Terraform Execution Guardrails
+- Use the scripted flow (`scripts/talos-bootstrap.sh`) via Make targets:
+  - `make talos-generate`
+  - `make talos-apply`
+  - `make talos-bootstrap`
+- Treat `talos/cluster.env` as local operator input (not committed).
+- Treat `talos/generated/` as generated artifacts (not committed).
 
-- Prefer `make tf-init`, `make tf-validate`, and `make tf-plan` from repository root.
-- Equivalent `mise` tasks are available (`mise run tf-init`, `mise run tf-validate`, `mise run tf-plan`).
-- Avoid running bare `terraform validate` from repository root (it can validate an empty root config).
+## Secrets and Local Files
 
-## Secrets Handling
+- Proxmox auth must come from environment variables.
+- Never commit local credential files:
+  - `terraform/environments/lab/.env`
+  - `terraform/environments/lab/.envrc`
+  - `talos/cluster.env`
+- `direnv` is the recommended per-directory env loader for Terraform auth.
 
-- Proxmox API authentication must come from environment variables.
-- `.env` and `.envrc` are local-only files and must never be committed.
-- `direnv` is the recommended way to load per-directory Terraform auth variables.
+## Scope Boundaries
+
+Current implemented scope:
+
+- Ansible workflows for Proxmox host bootstrap/upgrade/tuning/hardening.
+- Terraform lab foundation for Proxmox + Talos template + Talos node provisioning.
+- Talos bootstrap automation scripts and docs.
+
+Do not invent or apply infrastructure outside this scope unless explicitly requested.
 
 ## Git Hygiene
 
-- Do not create commits unless explicitly requested by the user
-- Do not push or rewrite history unless explicitly requested by the user
+- Do not create commits unless explicitly requested by the user.
+- Do not push, rewrite history, or amend commits unless explicitly requested.
+- Commit messages must follow Conventional Commits (see `README.md`).

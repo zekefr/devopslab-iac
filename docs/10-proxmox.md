@@ -1,4 +1,20 @@
-# 10 - Proxmox Bootstrap, Tweaks, Tuning, Hardening, and Upgrade
+# 10 - Proxmox
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Conceptual Model](#conceptual-model)
+- [Current File Map](#current-file-map)
+- [Inventory Basics](#inventory-basics)
+- [Bootstrap Behavior](#bootstrap-behavior)
+- [Upgrade Behavior](#upgrade-behavior)
+- [Tweaks Behavior](#tweaks-behavior)
+- [Tuning Behavior](#tuning-behavior)
+- [Hardening Behavior](#hardening-behavior)
+- [Execution Commands](#execution-commands)
+- [Variable Overrides](#variable-overrides)
+- [Agent Guidance (Codex / Claude)](#agent-guidance-codex--claude)
+- [Troubleshooting](#troubleshooting)
 
 ## Purpose
 
