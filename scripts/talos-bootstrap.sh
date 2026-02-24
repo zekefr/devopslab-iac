@@ -4,7 +4,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 
-CONFIG_FILE="${TALOS_CLUSTER_FILE:-${REPO_ROOT}/talos/cluster.env}"
+CONFIG_FILE="${TALOS_CLUSTER_FILE:-${REPO_ROOT}/talos/cluster.generated.env}"
+LOCAL_CONFIG_FILE="${TALOS_CLUSTER_LOCAL_FILE:-${REPO_ROOT}/talos/cluster.local.env}"
 OUTPUT_DIR="${TALOS_OUTPUT_DIR:-${REPO_ROOT}/talos/generated}"
 TALOS_CLIENT_CONFIG="${TALOS_CLIENT_CONFIG:-${OUTPUT_DIR}/base/talosconfig}"
 TALOS_SECRETS_FILE="${TALOS_SECRETS_FILE:-${OUTPUT_DIR}/base/secrets.yaml}"
@@ -15,7 +16,8 @@ usage() {
 Usage: $(basename "$0") <generate|apply|bootstrap|all>
 
 Environment overrides:
-  TALOS_CLUSTER_FILE   Path to cluster config file (default: talos/cluster.env)
+  TALOS_CLUSTER_FILE        Path to generated cluster config file (default: talos/cluster.generated.env)
+  TALOS_CLUSTER_LOCAL_FILE  Path to optional local override file (default: talos/cluster.local.env)
   TALOS_OUTPUT_DIR     Output directory for generated files (default: talos/generated)
   TALOS_CLIENT_CONFIG  Path to talosconfig used for bootstrap (default: talos/generated/base/talosconfig)
   TALOS_SECRETS_FILE   Path to Talos secrets bundle (default: talos/generated/base/secrets.yaml)
@@ -34,13 +36,18 @@ require_cmd() {
 load_config() {
   local action="${1:-}"
   if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "Missing config file: $CONFIG_FILE" >&2
-    echo "Create it from: talos/cluster.env.example" >&2
+    echo "Missing generated config file: $CONFIG_FILE" >&2
+    echo "Generate it from Terraform: make talos-sync" >&2
     exit 1
   fi
 
   # shellcheck disable=SC1090
   source "$CONFIG_FILE"
+
+  if [[ -f "$LOCAL_CONFIG_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$LOCAL_CONFIG_FILE"
+  fi
 
   : "${CLUSTER_NAME:?CLUSTER_NAME is required in $CONFIG_FILE}"
   : "${CLUSTER_ENDPOINT:?CLUSTER_ENDPOINT is required in $CONFIG_FILE}"

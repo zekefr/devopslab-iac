@@ -2,6 +2,12 @@ locals {
   talos_version_trimmed = trimprefix(var.talos_version, "v")
   talos_image_url       = "https://github.com/siderolabs/talos/releases/download/${var.talos_version}/metal-${var.talos_arch}.raw.zst"
   talos_image_file_name = "talos-${local.talos_version_trimmed}-${var.talos_arch}.img"
+  k8s_control_plane_nodes = sort([
+    for name, node in var.k8s_nodes : name if node.role == "control-plane"
+  ])
+  k8s_worker_nodes = sort([
+    for name, node in var.k8s_nodes : name if node.role == "worker"
+  ])
 }
 
 resource "proxmox_virtual_environment_download_file" "talos_image" {

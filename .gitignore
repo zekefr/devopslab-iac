@@ -27,4 +27,6 @@ terraform.rc
 
 # Talos bootstrap local artifacts
 talos/cluster.env
+talos/cluster.generated.env
+talos/cluster.local.env
 talos/generated/

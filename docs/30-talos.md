@@ -22,9 +22,10 @@ It covers:
 
 Talos automation is implemented with:
 
+- `scripts/talos-sync-from-terraform.sh`
 - `scripts/talos-bootstrap.sh`
-- `talos/cluster.env.example`
-- `make` targets: `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-all`
+- `talos/cluster.local.env.example`
+- `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-all`
 
 Generated machine configs are written to:
 
@@ -32,31 +33,41 @@ Generated machine configs are written to:
 
 ## Configuration File
 
-Create local cluster configuration:
+Generate cluster configuration from Terraform:
 
 ```bash
-cp talos/cluster.env.example talos/cluster.env
+make talos-sync
 ```
 
-Populate:
+This writes:
+
+- `talos/cluster.generated.env` (ignored by Git)
+
+Data comes from Terraform output (`talos_cluster_env`) and includes:
 
 - `CLUSTER_NAME`
-- `CLUSTER_ENDPOINT` (temporary endpoint can be first control plane IP)
+- `CLUSTER_ENDPOINT`
 - `GATEWAY_IPV4`
 - `DNS_SERVERS`
 - `CONTROL_PLANE_NODES`
 - `WORKER_NODES`
 - `NODE_TARGET_IP`
 
+Note:
+
+- `make talos-sync` reads Terraform state outputs, so run `make tf-apply` first after Terraform changes.
+
 Optional:
 
-- `BOOTSTRAP_NODE`
+- create `talos/cluster.local.env` from `talos/cluster.local.env.example`
+- set `BOOTSTRAP_NODE` only if you want to override the default first control plane
 
 ## Execution Flow
 
 ### Step-by-step
 
 ```bash
+make talos-sync
 make talos-generate
 make talos-apply
 make talos-bootstrap
@@ -72,4 +83,5 @@ make talos-all
 
 - `NODE_TARGET_IP` should contain final static Talos IPs and is also used for `talosctl apply-config`.
 - `talosctl kubeconfig` is executed during bootstrap.
-- Keep `talos/cluster.env` local-only (ignored by Git).
+- `talos/cluster.generated.env` is generated and should not be edited manually.
+- `talos/cluster.local.env` is optional local-only override (ignored by Git).

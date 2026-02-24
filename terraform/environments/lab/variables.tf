@@ -167,6 +167,18 @@ variable "k8s_worker_memory_mb" {
   default     = 16384
 }
 
+variable "k8s_cluster_name" {
+  description = "Talos/Kubernetes cluster name."
+  type        = string
+  default     = "homelab-k8s"
+}
+
+variable "k8s_cluster_endpoint" {
+  description = "Talos/Kubernetes API endpoint IP or VIP."
+  type        = string
+  default     = "192.168.1.201"
+}
+
 variable "k8s_gateway_ipv4" {
   description = "Planned IPv4 gateway for Kubernetes nodes."
   type        = string

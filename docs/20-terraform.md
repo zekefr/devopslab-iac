@@ -179,6 +179,7 @@ Provider-specific notes:
 
 - `talos_image_content_type` stays `iso` for compressed Talos `raw.zst`.
 - This workflow uses `disk.file_id` and requires SSH access to the Proxmox node from Terraform runtime.
+- Terraform exposes `talos_cluster_env` output used by `make talos-sync` as Talos single-source input (state must be updated via `make tf-apply`).
 
 ## DHCP Reservations for Pinned MAC Addresses
 
@@ -196,7 +197,7 @@ Without DHCP reservations, a recreated VM can still get unexpected temporary IPs
 
 - Terraform provisions VM shape/template only.
 - Talos bootstrap/config apply is documented separately in `docs/30-talos.md`.
-- Keep planned IPs in Terraform and Talos inputs consistent until single-source generation is implemented.
+- Talos cluster input is generated from Terraform output (`make talos-sync`), so node/IP inventory is single-source.
 
 ## Troubleshooting
 

@@ -64,5 +64,7 @@ k8s_nodes = {
 }
 
 # Cluster network plan
+k8s_cluster_name     = "homelab-k8s"
+k8s_cluster_endpoint = "192.0.2.101"
 k8s_gateway_ipv4 = "192.0.2.1"
 k8s_dns_servers  = ["1.1.1.1"]

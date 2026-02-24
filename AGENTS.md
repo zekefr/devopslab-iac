@@ -49,10 +49,12 @@ Current lint scope includes:
 ## Talos Guardrails
 
 - Use the scripted flow (`scripts/talos-bootstrap.sh`) via Make targets:
+  - `make talos-sync`
   - `make talos-generate`
   - `make talos-apply`
   - `make talos-bootstrap`
-- Treat `talos/cluster.env` as local operator input (not committed).
+- Treat `talos/cluster.generated.env` as generated local data (not committed).
+- Treat `talos/cluster.local.env` as local operator overrides (not committed).
 - Treat `talos/generated/` as generated artifacts (not committed).
 
 ## Secrets and Local Files
@@ -61,7 +63,8 @@ Current lint scope includes:
 - Never commit local credential files:
   - `terraform/environments/lab/.env`
   - `terraform/environments/lab/.envrc`
-  - `talos/cluster.env`
+  - `talos/cluster.generated.env`
+  - `talos/cluster.local.env`
 - `direnv` is the recommended per-directory env loader for Terraform auth.
 
 ## Scope Boundaries

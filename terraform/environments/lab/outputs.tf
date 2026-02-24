@@ -32,12 +32,12 @@ output "k8s_nodes" {
 
 output "k8s_control_plane_planned_ips" {
   description = "Planned IP addresses for control plane nodes."
-  value       = [for name, node in var.k8s_nodes : node.ip if node.role == "control-plane"]
+  value       = [for name in local.k8s_control_plane_nodes : var.k8s_nodes[name].ip]
 }
 
 output "k8s_worker_planned_ips" {
   description = "Planned IP addresses for worker nodes."
-  value       = [for name, node in var.k8s_nodes : node.ip if node.role == "worker"]
+  value       = [for name in local.k8s_worker_nodes : var.k8s_nodes[name].ip]
 }
 
 output "k8s_network_plan" {
@@ -46,4 +46,41 @@ output "k8s_network_plan" {
     gateway_ipv4 = var.k8s_gateway_ipv4
     dns_servers  = var.k8s_dns_servers
   }
+}
+
+output "talos_cluster_config" {
+  description = "Talos bootstrap configuration derived from Terraform (single source of truth)."
+  value = {
+    cluster_name        = var.k8s_cluster_name
+    cluster_endpoint    = var.k8s_cluster_endpoint
+    gateway_ipv4        = var.k8s_gateway_ipv4
+    dns_servers         = var.k8s_dns_servers
+    control_plane_nodes = local.k8s_control_plane_nodes
+    worker_nodes        = local.k8s_worker_nodes
+    node_target_ip      = { for name, node in var.k8s_nodes : name => node.ip }
+  }
+}
+
+output "talos_cluster_env" {
+  description = "Shell snippet generated from Terraform for Talos bootstrap input."
+  value = join("\n", concat(
+    [
+      "#!/usr/bin/env bash",
+      "# Generated from Terraform output 'talos_cluster_env'. Do not edit manually.",
+      format("CLUSTER_NAME=%s", jsonencode(var.k8s_cluster_name)),
+      format("CLUSTER_ENDPOINT=%s", jsonencode(var.k8s_cluster_endpoint)),
+      format("GATEWAY_IPV4=%s", jsonencode(var.k8s_gateway_ipv4)),
+      format("DNS_SERVERS=(%s)", join(" ", [for dns in var.k8s_dns_servers : jsonencode(dns)])),
+      format("CONTROL_PLANE_NODES=(%s)", join(" ", [for name in local.k8s_control_plane_nodes : jsonencode(name)])),
+      format("WORKER_NODES=(%s)", join(" ", [for name in local.k8s_worker_nodes : jsonencode(name)])),
+      "declare -A NODE_TARGET_IP=(",
+    ],
+    [
+      for name in sort(keys(var.k8s_nodes)) :
+      format("  [%s]=%s", name, jsonencode(var.k8s_nodes[name].ip))
+    ],
+    [
+      ")",
+    ]
+  ))
 }
