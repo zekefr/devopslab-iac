@@ -64,7 +64,15 @@ k8s_nodes = {
 }
 
 # Cluster network plan
-k8s_cluster_name     = "homelab-k8s"
+k8s_cluster_name = "homelab-k8s"
+
+# Phase 1 (initial bootstrap before kube-vip):
+# set endpoint to first control-plane node IP.
 k8s_cluster_endpoint = "192.0.2.101"
+
+# Phase 2 (after kube-vip API HA is deployed and validated):
+# switch endpoint to the API VIP.
+# k8s_cluster_endpoint = "192.0.2.120"
+
 k8s_gateway_ipv4 = "192.0.2.1"
 k8s_dns_servers  = ["1.1.1.1"]

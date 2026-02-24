@@ -183,6 +183,9 @@ Important behavior:
 - `k8s_nodes[*].ip` is planned metadata for Talos/static networking.
 - Proxmox clone itself does not configure guest static IP for Talos.
 - Talos network configuration is handled in the Talos phase (`docs/30-talos.md`).
+- `k8s_cluster_endpoint` is typically managed in 2 phases:
+  - initial bootstrap: first control-plane IP
+  - post kube-vip deployment: API VIP
 
 Provider-specific notes:
 

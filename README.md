@@ -8,7 +8,7 @@ based on:
 - Proxmox VE (PVE 9.x)
 - Ansible (currently: Proxmox host bootstrap, tweaks, tuning, hardening, and upgrade)
 - Terraform (currently: provider/auth foundation + Talos image/template workflow)
-- Talos & Kubernetes (planned)
+- Talos & Kubernetes bootstrap automation
 - GitOps (planned)
 
 ---
@@ -89,7 +89,10 @@ kubectl version --client
   - Terraform lab foundation (`bpg/proxmox` provider, auth wiring, lock file, command wrappers)
   - Talos image download + Talos base template VM creation in `terraform/environments/lab`
   - Talos Kubernetes VM provisioning from template (`3` control planes + `2` workers)
-- Planned (not yet implemented): Talos/Kubernetes bootstrap, GitOps
+  - Talos bootstrap automation (`talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`)
+  - Post-bootstrap health checks (`talos-post-bootstrap`)
+  - kube-vip API HA manifests and workflow (`kube-vip-apply`, `kube-vip-check`, `kube-vip-recover`)
+- Planned (not yet implemented): GitOps
 
 ## Documentation
 

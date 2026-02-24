@@ -3,8 +3,9 @@ TERRAFORM_LAB_DIR=terraform/environments/lab
 TALOS_BOOTSTRAP_SCRIPT=scripts/talos-bootstrap.sh
 TALOS_SYNC_SCRIPT=scripts/talos-sync-from-terraform.sh
 TALOS_POST_BOOTSTRAP_SCRIPT=scripts/talos-post-bootstrap.sh
+KUBE_VIP_SCRIPT=scripts/kube-vip.sh
 
-.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 pre-commit-install:
 	uv run pre-commit install
@@ -63,6 +64,18 @@ talos-post-bootstrap:
 
 talos-all:
 	mise exec -- $(TALOS_BOOTSTRAP_SCRIPT) all
+
+kube-vip-apply:
+	mise exec -- $(KUBE_VIP_SCRIPT) apply
+
+kube-vip-check:
+	mise exec -- $(KUBE_VIP_SCRIPT) check
+
+kube-vip-recover:
+	mise exec -- $(KUBE_VIP_SCRIPT) recover
+
+kube-vip-delete:
+	mise exec -- $(KUBE_VIP_SCRIPT) delete
 
 ansible-proxmox-bootstrap:
 	@echo "Bootstrapping Proxmox host"
