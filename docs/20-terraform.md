@@ -188,7 +188,7 @@ To make node bring-up deterministic after VM recreation:
 
 1. Create DHCP reservations on your DHCP server/router for each pinned MAC.
 2. Map each MAC to the expected temporary boot IP (or final IP if you use a single addressing strategy).
-3. Keep `NODE_APPLY_ENDPOINT` in Talos config aligned with those DHCP reservations when needed.
+3. Keep Talos `NODE_TARGET_IP` aligned with your reserved addressing strategy.
 
 Without DHCP reservations, a recreated VM can still get unexpected temporary IPs, even with stable VM names.
 

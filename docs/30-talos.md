@@ -51,7 +51,6 @@ Populate:
 Optional:
 
 - `BOOTSTRAP_NODE`
-- `NODE_APPLY_ENDPOINT` (temporary reachable IPs if nodes boot with DHCP first)
 
 ## Execution Flow
 
@@ -71,7 +70,6 @@ make talos-all
 
 ## Practical Notes
 
-- `NODE_APPLY_ENDPOINT` should contain current/reachable node IPs at apply time.
-- `NODE_TARGET_IP` should contain final static Talos IPs.
+- `NODE_TARGET_IP` should contain final static Talos IPs and is also used for `talosctl apply-config`.
 - `talosctl kubeconfig` is executed during bootstrap.
 - Keep `talos/cluster.env` local-only (ignored by Git).

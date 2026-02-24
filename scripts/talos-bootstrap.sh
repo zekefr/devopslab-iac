@@ -112,20 +112,6 @@ get_node_target_ip() {
   return 1
 }
 
-has_node_apply_endpoint() {
-  local node="$1"
-  local key
-  if ! declare -p NODE_APPLY_ENDPOINT >/dev/null 2>&1; then
-    return 1
-  fi
-  for key in "${!NODE_APPLY_ENDPOINT[@]}"; do
-    if [[ "$key" == "$node" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
 is_control_plane() {
   local node="$1"
   local cp
@@ -135,27 +121,6 @@ is_control_plane() {
     fi
   done
   return 1
-}
-
-node_apply_endpoint() {
-  local node="$1"
-  if has_node_apply_endpoint "$node"; then
-    local key
-    for key in "${!NODE_APPLY_ENDPOINT[@]}"; do
-      if [[ "$key" == "$node" ]]; then
-        printf "%s" "${NODE_APPLY_ENDPOINT["$key"]}"
-        return
-      fi
-    done
-  fi
-
-  if has_node_target_ip "$node"; then
-    printf "%s" "$(get_node_target_ip "$node")"
-    return
-  fi
-
-  echo "Missing NODE_TARGET_IP for node '$node'" >&2
-  exit 1
 }
 
 write_patch_file() {
@@ -347,7 +312,12 @@ apply_configs() {
       exit 1
     fi
 
-    endpoint="$(node_apply_endpoint "$node")"
+    if ! has_node_target_ip "$node"; then
+      echo "Missing NODE_TARGET_IP for node '$node'" >&2
+      exit 1
+    fi
+
+    endpoint="$(get_node_target_ip "$node")"
     echo "Applying ${rendered_file} to node endpoint ${endpoint}"
     if ! insecure_output="$(talosctl apply-config --insecure --nodes "$endpoint" --file "$rendered_file" 2>&1)"; then
       if [[ "$insecure_output" == *"tls: certificate required"* ]]; then
