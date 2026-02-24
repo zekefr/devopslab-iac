@@ -1,5 +1,6 @@
 [tools]
 terraform = "1.14.5"
+tflint = "0.59.1"
 talosctl = "1.12.4"
 kubectl = "1.35.1"
 

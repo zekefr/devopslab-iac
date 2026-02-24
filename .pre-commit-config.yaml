@@ -10,6 +10,27 @@ repos:
 
   - repo: local
     hooks:
+      - id: terraform-fmt
+        name: terraform fmt (recursive)
+        entry: bash -lc 'mise exec -- terraform fmt -check -recursive terraform'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: terraform-validate-lab
+        name: terraform validate (lab)
+        entry: bash -lc 'mise exec -- terraform -chdir=terraform/environments/lab init -backend=false -input=false && mise exec -- terraform -chdir=terraform/environments/lab validate'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: tflint-lab
+        name: tflint (lab)
+        entry: bash -lc 'mise exec -- tflint --chdir=terraform/environments/lab'
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: ansible-lint
         name: ansible-lint (uv)
         entry: uv run ansible-lint ansible
