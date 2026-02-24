@@ -10,6 +10,7 @@
 - [Terraform Workflow](#terraform-workflow)
 - [Destructive Replace Apply](#destructive-replace-apply)
 - [Variables and Network Model](#variables-and-network-model)
+- [Guardrails](#guardrails)
 - [DHCP Reservations for Pinned MAC Addresses](#dhcp-reservations-for-pinned-mac-addresses)
 - [Talos Integration Notes](#talos-integration-notes)
 - [Troubleshooting](#troubleshooting)
@@ -36,6 +37,7 @@ Implemented in `terraform/environments/lab`:
 - Talos template VM creation (default VMID `9000`)
 - Talos Kubernetes VMs provisioning from template (`3` control planes + `2` workers)
 - per-node static metadata (`role`, planned IP, VMID, pinned MAC address)
+- input guardrails (variable validation, global checks, template destroy protection)
 
 ## Directory
 
@@ -180,6 +182,17 @@ Provider-specific notes:
 - `talos_image_content_type` stays `iso` for compressed Talos `raw.zst`.
 - This workflow uses `disk.file_id` and requires SSH access to the Proxmox node from Terraform runtime.
 - Terraform exposes `talos_cluster_env` output used by `make talos-sync` as Talos single-source input (state must be updated via `make tf-apply`).
+
+## Guardrails
+
+Terraform now enforces additional protections:
+
+- input validation on critical fields (`ip`, `vm_id`, `mac_address`, VLAN, ports, sizing)
+- uniqueness checks for node IPs, VMIDs, and MAC addresses
+- global checks to ensure cluster shape is coherent (control plane presence, worker presence, odd multi-CP count, endpoint not on worker IP)
+- template protection with `prevent_destroy` on `proxmox_virtual_environment_vm.talos_template`
+
+If you intentionally need to destroy/recreate the Talos template, remove or temporarily disable `prevent_destroy` in `main.tf`.
 
 ## DHCP Reservations for Pinned MAC Addresses
 

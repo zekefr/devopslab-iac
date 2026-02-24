@@ -65,6 +65,10 @@ resource "proxmox_virtual_environment_vm" "talos_template" {
   operating_system {
     type = "l26"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "proxmox_virtual_environment_vm" "k8s_node" {
@@ -106,5 +110,12 @@ resource "proxmox_virtual_environment_vm" "k8s_node" {
     model       = "virtio"
     vlan_id     = var.proxmox_network_vlan_id
     mac_address = each.value.mac_address
+  }
+
+  lifecycle {
+    precondition {
+      condition     = each.value.vm_id != var.talos_template_vmid
+      error_message = "k8s node VMID must be different from talos_template_vmid."
+    }
   }
 }
