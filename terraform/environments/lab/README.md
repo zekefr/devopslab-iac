@@ -13,6 +13,10 @@ make tf-plan
 make tf-apply
 ```
 
+This environment instantiates the reusable module:
+
+- `terraform/modules/talos-proxmox-cluster`
+
 Local configuration files in this directory are operator-specific:
 
 - `.env` / `.envrc`

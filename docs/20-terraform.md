@@ -38,6 +38,7 @@ Implemented in `terraform/environments/lab`:
 - Talos Kubernetes VMs provisioning from template (`3` control planes + `2` workers)
 - per-node static metadata (`role`, planned IP, VMID, pinned MAC address)
 - input guardrails (variable validation, global checks, template destroy protection)
+- reusable module extraction (`terraform/modules/talos-proxmox-cluster`)
 
 ## Directory
 
@@ -55,6 +56,12 @@ terraform/environments/lab/
 ├── .envrc.example
 ├── .envrc                  # local, ignored
 └── .terraform.lock.hcl
+
+terraform/modules/talos-proxmox-cluster/
+├── main.tf
+├── variables.tf
+├── outputs.tf
+└── checks.tf
 ```
 
 ## Runtime and Command Wrappers
