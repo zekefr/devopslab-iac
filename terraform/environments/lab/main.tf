@@ -96,8 +96,9 @@ resource "proxmox_virtual_environment_vm" "k8s_node" {
   }
 
   network_device {
-    bridge  = var.proxmox_network_bridge
-    model   = "virtio"
-    vlan_id = var.proxmox_network_vlan_id
+    bridge      = var.proxmox_network_bridge
+    model       = "virtio"
+    vlan_id     = var.proxmox_network_vlan_id
+    mac_address = each.value.mac_address
   }
 }

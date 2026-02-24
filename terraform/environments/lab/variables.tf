@@ -126,14 +126,20 @@ variable "talos_template_tags" {
 variable "k8s_nodes" {
   description = "Kubernetes node definitions keyed by VM name."
   type = map(object({
-    role  = string
-    ip    = string
-    vm_id = number
+    role        = string
+    ip          = string
+    vm_id       = number
+    mac_address = string
   }))
 
   validation {
     condition     = alltrue([for node in values(var.k8s_nodes) : contains(["control-plane", "worker"], node.role)])
     error_message = "Each k8s_nodes.role must be either 'control-plane' or 'worker'."
+  }
+
+  validation {
+    condition     = alltrue([for node in values(var.k8s_nodes) : can(regex("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$", node.mac_address))])
+    error_message = "Each k8s_nodes.mac_address must be a valid MAC address (format XX:XX:XX:XX:XX:XX)."
   }
 }
 

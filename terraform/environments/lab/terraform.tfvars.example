@@ -32,29 +32,34 @@ k8s_worker_memory_mb        = 16384
 # Cluster nodes
 k8s_nodes = {
   cp01 = {
-    role  = "control-plane"
-    ip    = "192.0.2.101"
-    vm_id = 9101
+    role        = "control-plane"
+    ip          = "192.0.2.101"
+    vm_id       = 9101
+    mac_address = "02:00:00:00:01:01"
   }
   cp02 = {
-    role  = "control-plane"
-    ip    = "192.0.2.102"
-    vm_id = 9102
+    role        = "control-plane"
+    ip          = "192.0.2.102"
+    vm_id       = 9102
+    mac_address = "02:00:00:00:01:02"
   }
   cp03 = {
-    role  = "control-plane"
-    ip    = "192.0.2.103"
-    vm_id = 9103
+    role        = "control-plane"
+    ip          = "192.0.2.103"
+    vm_id       = 9103
+    mac_address = "02:00:00:00:01:03"
   }
   wk01 = {
-    role  = "worker"
-    ip    = "192.0.2.111"
-    vm_id = 9104
+    role        = "worker"
+    ip          = "192.0.2.111"
+    vm_id       = 9104
+    mac_address = "02:00:00:00:01:04"
   }
   wk02 = {
-    role  = "worker"
-    ip    = "192.0.2.112"
-    vm_id = 9105
+    role        = "worker"
+    ip          = "192.0.2.112"
+    vm_id       = 9105
+    mac_address = "02:00:00:00:01:05"
   }
 }
 

@@ -2,7 +2,7 @@ ANSIBLE_DIR=ansible
 TERRAFORM_LAB_DIR=terraform/environments/lab
 TALOS_BOOTSTRAP_SCRIPT=scripts/talos-bootstrap.sh
 
-.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto talos-generate talos-apply talos-bootstrap talos-all ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-generate talos-apply talos-bootstrap talos-all ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 pre-commit-install:
 	uv run pre-commit install
@@ -24,6 +24,25 @@ tf-apply:
 
 tf-apply-auto:
 	direnv exec $(TERRAFORM_LAB_DIR) mise run tf-apply-auto
+
+tf-apply-replace:
+	@if [ -z "$(REPLACE)" ]; then \
+		echo "Usage: make tf-apply-replace REPLACE='<resource1> <resource2> ...'"; \
+		echo "Example: make tf-apply-replace REPLACE='proxmox_virtual_environment_vm.k8s_node[\"cpk8s01\"]'"; \
+		exit 1; \
+	fi
+	@echo "Destructive operation: Terraform will recreate the following resources:"
+	@for target in $(REPLACE); do \
+		canonical_target=$$(printf '%s' "$$target" | sed -E 's/\[([[:alnum:]_-]+)\]/["\1"]/g'); \
+		echo "  - $$canonical_target"; \
+	done
+	@set -eu; \
+	set --; \
+	for target in $(REPLACE); do \
+		canonical_target=$$(printf '%s' "$$target" | sed -E 's/\[([[:alnum:]_-]+)\]/["\1"]/g'); \
+		set -- "$$@" "-replace=$$canonical_target"; \
+	done; \
+	direnv exec $(TERRAFORM_LAB_DIR) terraform -chdir=$(TERRAFORM_LAB_DIR) apply "$$@"
 
 talos-generate:
 	mise exec -- $(TALOS_BOOTSTRAP_SCRIPT) generate
