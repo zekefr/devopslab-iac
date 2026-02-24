@@ -24,8 +24,9 @@ Talos automation is implemented with:
 
 - `scripts/talos-sync-from-terraform.sh`
 - `scripts/talos-bootstrap.sh`
+- `scripts/talos-post-bootstrap.sh`
 - `talos/cluster.local.env.example`
-- `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-all`
+- `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-post-bootstrap`, `talos-all`
 
 Generated machine configs are written to:
 
@@ -71,6 +72,7 @@ make talos-sync
 make talos-generate
 make talos-apply
 make talos-bootstrap
+make talos-post-bootstrap
 ```
 
 ### One-shot
@@ -83,5 +85,6 @@ make talos-all
 
 - `NODE_TARGET_IP` should contain final static Talos IPs and is also used for `talosctl apply-config`.
 - `talosctl kubeconfig` is executed during bootstrap.
+- `make talos-post-bootstrap` runs non-destructive health checks (etcd members, node readiness, `kube-system` pods).
 - `talos/cluster.generated.env` is generated and should not be edited manually.
 - `talos/cluster.local.env` is optional local-only override (ignored by Git).

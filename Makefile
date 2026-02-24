@@ -2,8 +2,9 @@ ANSIBLE_DIR=ansible
 TERRAFORM_LAB_DIR=terraform/environments/lab
 TALOS_BOOTSTRAP_SCRIPT=scripts/talos-bootstrap.sh
 TALOS_SYNC_SCRIPT=scripts/talos-sync-from-terraform.sh
+TALOS_POST_BOOTSTRAP_SCRIPT=scripts/talos-post-bootstrap.sh
 
-.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-all ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 pre-commit-install:
 	uv run pre-commit install
@@ -56,6 +57,9 @@ talos-apply:
 
 talos-bootstrap:
 	mise exec -- $(TALOS_BOOTSTRAP_SCRIPT) bootstrap
+
+talos-post-bootstrap:
+	mise exec -- $(TALOS_POST_BOOTSTRAP_SCRIPT) check
 
 talos-all:
 	mise exec -- $(TALOS_BOOTSTRAP_SCRIPT) all
