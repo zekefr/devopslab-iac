@@ -8,17 +8,151 @@ TALOS_POST_BOOTSTRAP_SCRIPT=scripts/talos-post-bootstrap.sh
 KUBE_VIP_SCRIPT=scripts/kube-vip.sh
 HELM_RELEASE_SCRIPT=scripts/helm-release.sh
 
-.PHONY: help list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 help: ## Show available make targets and usage examples
 	@echo "Usage: make <target>"
 	@echo
 	@echo "Examples:"
 	@echo "  make tf-plan"
+	@echo "  make doctor"
+	@echo "  make status"
 	@echo "  make tf-apply-replace REPLACE='module.talos_proxmox_cluster.proxmox_virtual_environment_vm.k8s_node[\"cpk8s01\"]'"
 	@echo "  make helm-apply RELEASE='kube-vip'"
 	@echo
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_.-]+:.*##/ {printf "  %-26s %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+
+doctor: ## Run local environment diagnostics (toolchain, auth env, kubectl access)
+	@set -eu; \
+	if [ -t 1 ] && [ -z "$${NO_COLOR:-}" ]; then \
+		C_RESET='\033[0m'; \
+		C_BOLD='\033[1m'; \
+		C_GREEN='\033[32m'; \
+		C_YELLOW='\033[33m'; \
+		C_RED='\033[31m'; \
+		C_CYAN='\033[36m'; \
+	else \
+		C_RESET=''; \
+		C_BOLD=''; \
+		C_GREEN=''; \
+		C_YELLOW=''; \
+		C_RED=''; \
+		C_CYAN=''; \
+	fi; \
+	fail=0; \
+	print_section() { printf "%b== %s ==%b\n" "$$C_CYAN$$C_BOLD" "$$1" "$$C_RESET"; }; \
+	print_ok() { printf "%b[ok]%b %s\n" "$$C_GREEN$$C_BOLD" "$$C_RESET" "$$1"; }; \
+	print_warn() { printf "%b[warn]%b %s\n" "$$C_YELLOW$$C_BOLD" "$$C_RESET" "$$1"; }; \
+	print_fail() { printf "%b[fail]%b %s\n" "$$C_RED$$C_BOLD" "$$C_RESET" "$$1"; }; \
+	check_bin() { \
+		if command -v "$$1" >/dev/null 2>&1; then \
+			print_ok "binary: $$1"; \
+		else \
+			print_fail "missing binary: $$1"; \
+			fail=1; \
+		fi; \
+	}; \
+	print_section "Binaries"; \
+	check_bin uv; \
+	check_bin mise; \
+	check_bin direnv; \
+	echo; \
+	print_section "Runtime versions"; \
+	uv run python --version || fail=1; \
+	uv run ansible-lint --version >/dev/null || fail=1; \
+	mise exec -- terraform version | head -n1 || fail=1; \
+	mise exec -- talosctl version --client >/dev/null || fail=1; \
+	mise exec -- kubectl version --client >/dev/null || fail=1; \
+	mise exec -- helm version --short >/dev/null || fail=1; \
+	print_ok "uv/mise managed toolchain available"; \
+	echo; \
+	print_section "Terraform auth env (direnv)"; \
+	if direnv exec $(TERRAFORM_LAB_DIR) bash -lc '[[ -n "$$PROXMOX_VE_ENDPOINT" ]]'; then \
+		print_ok "PROXMOX_VE_ENDPOINT set"; \
+	else \
+		print_fail "PROXMOX_VE_ENDPOINT missing"; \
+		fail=1; \
+	fi; \
+	if direnv exec $(TERRAFORM_LAB_DIR) bash -lc '[[ -n "$$PROXMOX_VE_API_TOKEN" ]]'; then \
+		print_ok "PROXMOX_VE_API_TOKEN set"; \
+	else \
+		print_fail "PROXMOX_VE_API_TOKEN missing"; \
+		fail=1; \
+	fi; \
+	echo; \
+	print_section "Kubernetes access"; \
+	if kubectl --request-timeout=5s get --raw=/readyz >/dev/null 2>&1; then \
+		print_ok "kubectl can reach API (/readyz)"; \
+	else \
+		print_warn "kubectl cannot reach API right now"; \
+	fi; \
+	echo; \
+	if [ "$$fail" -ne 0 ]; then \
+		printf "%bDoctor checks failed.%b\n" "$$C_RED$$C_BOLD" "$$C_RESET"; \
+		exit "$$fail"; \
+	fi; \
+	printf "%bDoctor checks passed.%b\n" "$$C_GREEN$$C_BOLD" "$$C_RESET"
+
+status: ## Show lab status summary (Terraform state, Kubernetes nodes, Helm releases)
+	@set -eu; \
+	if [ -t 1 ] && [ -z "$${NO_COLOR:-}" ]; then \
+		C_RESET='\033[0m'; \
+		C_BOLD='\033[1m'; \
+		C_GREEN='\033[32m'; \
+		C_YELLOW='\033[33m'; \
+		C_CYAN='\033[36m'; \
+	else \
+		C_RESET=''; \
+		C_BOLD=''; \
+		C_GREEN=''; \
+		C_YELLOW=''; \
+		C_CYAN=''; \
+	fi; \
+	print_section() { printf "%b== %s ==%b\n" "$$C_CYAN$$C_BOLD" "$$1" "$$C_RESET"; }; \
+	print_ok() { printf "%b[ok]%b %s\n" "$$C_GREEN$$C_BOLD" "$$C_RESET" "$$1"; }; \
+	print_warn() { printf "%b[warn]%b %s\n" "$$C_YELLOW$$C_BOLD" "$$C_RESET" "$$1"; }; \
+	print_info() { printf "%s\n" "$$1"; }; \
+	echo "Lab status snapshot"; \
+	echo; \
+	print_section "Terraform"; \
+	if tf_state=$$(DIRENV_LOG_FORMAT= direnv exec $(TERRAFORM_LAB_DIR) terraform -chdir=$(TERRAFORM_LAB_DIR) state list 2>/dev/null); then \
+		tf_count=$$(printf "%s\n" "$$tf_state" | sed '/^$$/d' | wc -l | tr -d ' '); \
+		print_ok "state resources: $$tf_count"; \
+	else \
+		print_warn "terraform state unavailable (run make tf-init or check backend access)"; \
+	fi; \
+	echo; \
+	print_section "Kubernetes"; \
+	if ctx=$$(mise exec -- kubectl config current-context 2>/dev/null); then \
+		print_info "context: $$ctx"; \
+	else \
+		print_warn "kubectl context not configured"; \
+	fi; \
+	if server=$$(mise exec -- kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2>/dev/null); then \
+		if [ -n "$$server" ]; then \
+			print_info "api-server: $$server"; \
+		fi; \
+	fi; \
+	if mise exec -- kubectl --request-timeout=5s get --raw=/readyz >/dev/null 2>&1; then \
+		print_ok "API reachable"; \
+		if nodes=$$(mise exec -- kubectl get nodes --no-headers 2>/dev/null); then \
+			node_count=$$(printf "%s\n" "$$nodes" | sed '/^$$/d' | wc -l | tr -d ' '); \
+			ready_count=$$(printf "%s\n" "$$nodes" | awk 'index($$2,"Ready")==1 {c++} END {print c+0}'); \
+			print_info "nodes ready: $$ready_count/$$node_count"; \
+		fi; \
+		mise exec -- kubectl get nodes -o wide; \
+	else \
+		print_warn "API not reachable right now"; \
+	fi; \
+	echo; \
+	print_section "Helm"; \
+	if releases=$$(mise exec -- helm list -A 2>/dev/null); then \
+		release_count=$$(printf "%s\n" "$$releases" | awk 'NR>1 {c++} END {print c+0}'); \
+		print_info "releases: $$release_count"; \
+		printf "%s\n" "$$releases"; \
+	else \
+		print_warn "helm list unavailable"; \
+	fi
 
 list-releases: ## List available Helm release directories under kubernetes/helm
 	@if [ -d kubernetes/helm ]; then \
