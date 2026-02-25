@@ -59,6 +59,10 @@ Current lint scope includes:
   - `make kube-vip-check`
   - `make kube-vip-recover`
   - `make kube-vip-delete`
+- metrics-server is managed with:
+  - `make metrics-server-apply`
+  - `make metrics-server-check`
+  - `make metrics-server-delete`
 - Helm releases should use the standardized release layout:
   - `kubernetes/helm/<release>/release.env`
   - `kubernetes/helm/<release>/values.lab.yaml`
@@ -85,6 +89,7 @@ Current implemented scope:
 - Terraform lab foundation for Proxmox + Talos template + Talos node provisioning.
 - Talos bootstrap automation scripts and docs.
 - kube-vip API HA Helm values and operational workflow.
+- metrics-server Helm values and operational workflow.
 
 Do not invent or apply infrastructure outside this scope unless explicitly requested.
 

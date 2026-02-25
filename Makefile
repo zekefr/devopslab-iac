@@ -6,9 +6,10 @@ TALOS_BOOTSTRAP_SCRIPT=scripts/talos-bootstrap.sh
 TALOS_SYNC_SCRIPT=scripts/talos-sync-from-terraform.sh
 TALOS_POST_BOOTSTRAP_SCRIPT=scripts/talos-post-bootstrap.sh
 KUBE_VIP_SCRIPT=scripts/kube-vip.sh
+METRICS_SERVER_SCRIPT=scripts/metrics-server.sh
 HELM_RELEASE_SCRIPT=scripts/helm-release.sh
 
-.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete metrics-server-apply metrics-server-check metrics-server-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 help: ## Show available make targets and usage examples
 	@echo "Usage: make <target>"
@@ -17,6 +18,7 @@ help: ## Show available make targets and usage examples
 	@echo "  make tf-plan"
 	@echo "  make doctor"
 	@echo "  make status"
+	@echo "  make metrics-server-apply"
 	@echo "  make tf-apply-replace REPLACE='module.talos_proxmox_cluster.proxmox_virtual_environment_vm.k8s_node[\"cpk8s01\"]'"
 	@echo "  make helm-apply RELEASE='kube-vip'"
 	@echo
@@ -140,6 +142,11 @@ status: ## Show lab status summary (Terraform state, Kubernetes nodes, Helm rele
 			ready_count=$$(printf "%s\n" "$$nodes" | awk 'index($$2,"Ready")==1 {c++} END {print c+0}'); \
 			print_info "nodes ready: $$ready_count/$$node_count"; \
 		fi; \
+		if mise exec -- kubectl get --raw '/apis/metrics.k8s.io/v1beta1/nodes' >/dev/null 2>&1; then \
+			print_ok "metrics API reachable"; \
+		else \
+			print_warn "metrics API not reachable (metrics-server missing or not ready)"; \
+		fi; \
 		mise exec -- kubectl get nodes -o wide; \
 	else \
 		print_warn "API not reachable right now"; \
@@ -254,6 +261,15 @@ kube-vip-recover: ## Recover kube-vip availability (restart kube-proxy + kube-vi
 
 kube-vip-delete: ## Delete kube-vip Helm release
 	mise exec -- $(KUBE_VIP_SCRIPT) delete
+
+metrics-server-apply: ## Apply metrics-server Helm release
+	mise exec -- $(METRICS_SERVER_SCRIPT) apply
+
+metrics-server-check: ## Check metrics-server rollout and metrics API status
+	mise exec -- $(METRICS_SERVER_SCRIPT) check
+
+metrics-server-delete: ## Delete metrics-server Helm release
+	mise exec -- $(METRICS_SERVER_SCRIPT) delete
 
 ansible-proxmox-bootstrap: ## Run Ansible Proxmox bootstrap tasks
 	@echo "Bootstrapping Proxmox host"

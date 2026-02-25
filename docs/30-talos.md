@@ -8,6 +8,7 @@
 - [Execution Flow](#execution-flow)
 - [Practical Notes](#practical-notes)
 - [Kube-VIP API HA](#kube-vip-api-ha)
+- [Metrics Server](#metrics-server)
 
 ## Purpose
 
@@ -27,9 +28,12 @@ Talos automation is implemented with:
 - `scripts/talos-bootstrap.sh`
 - `scripts/talos-post-bootstrap.sh`
 - `scripts/kube-vip.sh`
+- `scripts/metrics-server.sh`
 - `talos/cluster.local.env.example`
 - `kubernetes/helm/kube-vip/release.env`
 - `kubernetes/helm/kube-vip/values.lab.yaml`
+- `kubernetes/helm/metrics-server/release.env`
+- `kubernetes/helm/metrics-server/values.lab.yaml`
 - `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-post-bootstrap`, `talos-all`
 
 Generated machine configs are written to:
@@ -150,4 +154,41 @@ You can override it explicitly if needed:
 
 ```bash
 KUBE_VIP_RECOVERY_API_SERVER=192.168.1.201 make kube-vip-recover
+```
+
+## Metrics Server
+
+This repository provides declarative Helm-based metrics-server configuration in:
+
+- `kubernetes/helm/metrics-server/release.env` (release metadata)
+- `kubernetes/helm/metrics-server/values.lab.yaml` (environment values)
+
+Current defaults:
+
+- two replicas
+- `--kubelet-insecure-tls` enabled (homelab-friendly Talos default)
+- metrics resolution set to `15s`
+- release namespace: `kube-system`
+
+Commands:
+
+```bash
+make helm-apply RELEASE='metrics-server'
+make helm-check RELEASE='metrics-server'
+make metrics-server-apply
+make metrics-server-check
+```
+
+Optional removal:
+
+```bash
+make metrics-server-delete
+```
+
+Validation:
+
+```bash
+kubectl get apiservice v1beta1.metrics.k8s.io
+kubectl top nodes
+kubectl top pods -A
 ```

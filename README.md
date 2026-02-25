@@ -93,6 +93,7 @@ helm version --short
   - Talos bootstrap automation (`talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`)
   - Post-bootstrap health checks (`talos-post-bootstrap`)
   - kube-vip API HA Helm workflow (`kube-vip-apply`, `kube-vip-check`, `kube-vip-recover`)
+  - metrics-server Helm workflow (`metrics-server-apply`, `metrics-server-check`)
   - generic Helm release workflow (`helm-apply`, `helm-check`, `helm-delete`)
 - Planned (not yet implemented): GitOps
 
