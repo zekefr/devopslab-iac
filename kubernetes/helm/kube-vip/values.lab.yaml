@@ -1,0 +1,43 @@
+image:
+  tag: v0.8.7
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+config:
+  address: 192.168.1.220
+  enableControlPlane: true
+  services:
+    enabled: false
+  enableARP: true
+  leaderElection: true
+  vipInterface: ens18
+  vipSubnet: "32"
+  lb_port: 6443
+
+nodeSelector:
+  node-role.kubernetes.io/control-plane: ""
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - operator: Exists
+    effect: NoExecute
+
+priorityClassName: system-cluster-critical
+
+securityContext:
+  capabilities:
+    add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_TIME
+    drop:
+      - ALL

@@ -73,12 +73,13 @@ make tf-plan
 
 ## Talos/Kubernetes CLI Runtime
 
-Talos and Kubernetes clients are pinned via `mise`:
+Talos/Kubernetes clients and Helm are pinned via `mise`:
 
 ```bash
 mise install
 talosctl version --client
 kubectl version --client
+helm version --short
 ```
 
 ## Scope (current stage)
@@ -91,7 +92,8 @@ kubectl version --client
   - Talos Kubernetes VM provisioning from template (`3` control planes + `2` workers)
   - Talos bootstrap automation (`talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`)
   - Post-bootstrap health checks (`talos-post-bootstrap`)
-  - kube-vip API HA manifests and workflow (`kube-vip-apply`, `kube-vip-check`, `kube-vip-recover`)
+  - kube-vip API HA Helm workflow (`kube-vip-apply`, `kube-vip-check`, `kube-vip-recover`)
+  - generic Helm release workflow (`helm-apply`, `helm-check`, `helm-delete`)
 - Planned (not yet implemented): GitOps
 
 ## Documentation
@@ -106,6 +108,7 @@ kubectl version --client
 ```text
 .
 ├── ansible/        # Ansible code
+├── kubernetes/     # Kubernetes Helm release definitions
 ├── terraform/      # Terraform code (lab environment foundation)
 ├── talos/          # Talos bootstrap inputs and generated configs
 ├── scripts/        # Repository automation scripts

@@ -23,6 +23,7 @@ The goal is to keep execution reproducible:
 - Terraform `1.14.5` (managed by `mise`)
 - talosctl `1.12.4` (managed by `mise`)
 - kubectl `1.35.1` (managed by `mise`)
+- helm `3.19.0` (managed by `mise`)
 
 ### Why `uv run` is mandatory
 
@@ -65,6 +66,7 @@ uv run pre-commit --version
 terraform version
 talosctl version --client
 kubectl version --client
+helm version --short
 ```
 
 ## Lint Workflow

@@ -28,6 +28,8 @@ Talos automation is implemented with:
 - `scripts/talos-post-bootstrap.sh`
 - `scripts/kube-vip.sh`
 - `talos/cluster.local.env.example`
+- `kubernetes/helm/kube-vip/release.env`
+- `kubernetes/helm/kube-vip/values.lab.yaml`
 - `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-post-bootstrap`, `talos-all`
 
 Generated machine configs are written to:
@@ -93,19 +95,23 @@ make talos-all
 
 ## Kube-VIP API HA
 
-This repository provides declarative kube-vip manifests for Kubernetes API HA in:
+This repository provides declarative Helm-based kube-vip configuration for Kubernetes API HA in:
 
-- `kubernetes/bootstrap/kube-vip/`
+- `kubernetes/helm/kube-vip/release.env` (release metadata)
+- `kubernetes/helm/kube-vip/values.lab.yaml` (environment values)
 
 Current mode is API-only (no Service `LoadBalancer` handling):
 
 - VIP address: `192.168.1.220`
 - ARP/L2 mode
 - leader election enabled
+- Helm chart: `kube-vip/kube-vip` (release `kube-vip`)
 
 Commands:
 
 ```bash
+make helm-apply RELEASE='kube-vip'
+make helm-check RELEASE='kube-vip'
 make kube-vip-apply
 make kube-vip-check
 make kube-vip-recover

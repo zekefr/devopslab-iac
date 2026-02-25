@@ -59,6 +59,10 @@ Current lint scope includes:
   - `make kube-vip-check`
   - `make kube-vip-recover`
   - `make kube-vip-delete`
+- Helm releases should use the standardized release layout:
+  - `kubernetes/helm/<release>/release.env`
+  - `kubernetes/helm/<release>/values.lab.yaml`
+  - generic targets: `make helm-apply RELEASE='<release>'`, `make helm-check RELEASE='<release>'`, `make helm-delete RELEASE='<release>'`
 - Treat `talos/cluster.generated.env` as generated local data (not committed).
 - Treat `talos/cluster.local.env` as local operator overrides (not committed).
 - Treat `talos/generated/` as generated artifacts (not committed).
@@ -80,7 +84,7 @@ Current implemented scope:
 - Ansible workflows for Proxmox host bootstrap/upgrade/tuning/hardening.
 - Terraform lab foundation for Proxmox + Talos template + Talos node provisioning.
 - Talos bootstrap automation scripts and docs.
-- kube-vip API HA manifests and operational workflow.
+- kube-vip API HA Helm values and operational workflow.
 
 Do not invent or apply infrastructure outside this scope unless explicitly requested.
 

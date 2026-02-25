@@ -3,10 +3,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+HELM_RELEASE_SCRIPT="${REPO_ROOT}/scripts/helm-release.sh"
 
-KUBE_VIP_MANIFEST_DIR="${KUBE_VIP_MANIFEST_DIR:-${REPO_ROOT}/kubernetes/bootstrap/kube-vip}"
+KUBE_VIP_RELEASE_DIR="${KUBE_VIP_RELEASE_DIR:-${REPO_ROOT}/kubernetes/helm/kube-vip}"
 KUBE_VIP_NAMESPACE="${KUBE_VIP_NAMESPACE:-kube-system}"
-KUBE_VIP_DAEMONSET_NAME="${KUBE_VIP_DAEMONSET_NAME:-kube-vip-ds}"
+KUBE_VIP_DAEMONSET_NAME="${KUBE_VIP_DAEMONSET_NAME:-kube-vip}"
 KUBE_VIP_WAIT_TIMEOUT="${KUBE_VIP_WAIT_TIMEOUT:-180s}"
 KUBE_VIP_ADDRESS="${KUBE_VIP_ADDRESS:-192.168.1.220}"
 KUBE_VIP_RECOVERY_API_SERVER="${KUBE_VIP_RECOVERY_API_SERVER:-}"
@@ -17,9 +18,9 @@ usage() {
 Usage: $(basename "$0") <apply|check|recover|delete>
 
 Environment overrides:
-  KUBE_VIP_MANIFEST_DIR   Manifest directory (default: kubernetes/bootstrap/kube-vip)
+  KUBE_VIP_RELEASE_DIR          Helm release directory (default: kubernetes/helm/kube-vip)
   KUBE_VIP_NAMESPACE      Namespace (default: kube-system)
-  KUBE_VIP_DAEMONSET_NAME DaemonSet name (default: kube-vip-ds)
+  KUBE_VIP_DAEMONSET_NAME DaemonSet name (default: kube-vip)
   KUBE_VIP_WAIT_TIMEOUT   Rollout wait timeout (default: 180s)
   KUBE_VIP_ADDRESS        API VIP address (default: 192.168.1.220)
   KUBE_VIP_RECOVERY_API_SERVER  API server IP used for recovery operations
@@ -36,8 +37,18 @@ require_cmd() {
 }
 
 validate_inputs() {
-  if [[ ! -f "$KUBE_VIP_MANIFEST_DIR/kustomization.yaml" ]]; then
-    echo "Missing kube-vip manifests in: $KUBE_VIP_MANIFEST_DIR" >&2
+  if [[ ! -x "$HELM_RELEASE_SCRIPT" ]]; then
+    echo "Missing or non-executable Helm release script: $HELM_RELEASE_SCRIPT" >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$KUBE_VIP_RELEASE_DIR/release.env" ]]; then
+    echo "Missing kube-vip release config: $KUBE_VIP_RELEASE_DIR/release.env" >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$KUBE_VIP_RELEASE_DIR/values.lab.yaml" ]]; then
+    echo "Missing kube-vip values file: $KUBE_VIP_RELEASE_DIR/values.lab.yaml" >&2
     exit 1
   fi
 
@@ -78,8 +89,8 @@ kubectl_recovery() {
 }
 
 apply_kube_vip() {
-  echo "Applying kube-vip manifests from $KUBE_VIP_MANIFEST_DIR"
-  kubectl apply -k "$KUBE_VIP_MANIFEST_DIR"
+  echo "Applying kube-vip Helm release from $KUBE_VIP_RELEASE_DIR"
+  HELM_RELEASE_DIR="$KUBE_VIP_RELEASE_DIR" HELM_WAIT_TIMEOUT="$KUBE_VIP_WAIT_TIMEOUT" "$HELM_RELEASE_SCRIPT" apply
 
   echo "Waiting for kube-vip DaemonSet rollout"
   kubectl -n "$KUBE_VIP_NAMESPACE" rollout status "daemonset/${KUBE_VIP_DAEMONSET_NAME}" --timeout="$KUBE_VIP_WAIT_TIMEOUT"
@@ -88,6 +99,8 @@ apply_kube_vip() {
 }
 
 check_kube_vip() {
+  HELM_RELEASE_DIR="$KUBE_VIP_RELEASE_DIR" "$HELM_RELEASE_SCRIPT" check >/dev/null
+
   echo "kube-vip DaemonSet status"
   kubectl -n "$KUBE_VIP_NAMESPACE" get daemonset "$KUBE_VIP_DAEMONSET_NAME"
 
@@ -134,13 +147,13 @@ recover_kube_vip() {
 }
 
 delete_kube_vip() {
-  echo "Deleting kube-vip manifests from $KUBE_VIP_MANIFEST_DIR"
-  kubectl delete -k "$KUBE_VIP_MANIFEST_DIR"
+  HELM_RELEASE_DIR="$KUBE_VIP_RELEASE_DIR" "$HELM_RELEASE_SCRIPT" delete
 }
 
 main() {
   local action="${1:-}"
   require_cmd kubectl
+  require_cmd helm
   validate_inputs
 
   case "$action" in

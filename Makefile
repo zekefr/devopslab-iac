@@ -4,8 +4,9 @@ TALOS_BOOTSTRAP_SCRIPT=scripts/talos-bootstrap.sh
 TALOS_SYNC_SCRIPT=scripts/talos-sync-from-terraform.sh
 TALOS_POST_BOOTSTRAP_SCRIPT=scripts/talos-post-bootstrap.sh
 KUBE_VIP_SCRIPT=scripts/kube-vip.sh
+HELM_RELEASE_SCRIPT=scripts/helm-release.sh
 
-.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 pre-commit-install:
 	uv run pre-commit install
@@ -64,6 +65,30 @@ talos-post-bootstrap:
 
 talos-all:
 	mise exec -- $(TALOS_BOOTSTRAP_SCRIPT) all
+
+helm-apply:
+	@if [ -z "$(RELEASE)" ]; then \
+		echo "Usage: make helm-apply RELEASE='<release-name>'"; \
+		echo "Example: make helm-apply RELEASE='kube-vip'"; \
+		exit 1; \
+	fi
+	HELM_RELEASE_DIR=kubernetes/helm/$(RELEASE) mise exec -- $(HELM_RELEASE_SCRIPT) apply
+
+helm-check:
+	@if [ -z "$(RELEASE)" ]; then \
+		echo "Usage: make helm-check RELEASE='<release-name>'"; \
+		echo "Example: make helm-check RELEASE='kube-vip'"; \
+		exit 1; \
+	fi
+	HELM_RELEASE_DIR=kubernetes/helm/$(RELEASE) mise exec -- $(HELM_RELEASE_SCRIPT) check
+
+helm-delete:
+	@if [ -z "$(RELEASE)" ]; then \
+		echo "Usage: make helm-delete RELEASE='<release-name>'"; \
+		echo "Example: make helm-delete RELEASE='kube-vip'"; \
+		exit 1; \
+	fi
+	HELM_RELEASE_DIR=kubernetes/helm/$(RELEASE) mise exec -- $(HELM_RELEASE_SCRIPT) delete
 
 kube-vip-apply:
 	mise exec -- $(KUBE_VIP_SCRIPT) apply
