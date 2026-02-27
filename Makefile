@@ -7,9 +7,10 @@ TALOS_SYNC_SCRIPT=scripts/talos-sync-from-terraform.sh
 TALOS_POST_BOOTSTRAP_SCRIPT=scripts/talos-post-bootstrap.sh
 KUBE_VIP_SCRIPT=scripts/kube-vip.sh
 METRICS_SERVER_SCRIPT=scripts/metrics-server.sh
+METALLB_SCRIPT=scripts/metallb.sh
 HELM_RELEASE_SCRIPT=scripts/helm-release.sh
 
-.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete metrics-server-apply metrics-server-check metrics-server-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete metrics-server-apply metrics-server-check metrics-server-delete metallb-apply metallb-check metallb-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 help: ## Show available make targets and usage examples
 	@echo "Usage: make <target>"
@@ -19,6 +20,7 @@ help: ## Show available make targets and usage examples
 	@echo "  make doctor"
 	@echo "  make status"
 	@echo "  make metrics-server-apply"
+	@echo "  make metallb-apply"
 	@echo "  make tf-apply-replace REPLACE='module.talos_proxmox_cluster.proxmox_virtual_environment_vm.k8s_node[\"cpk8s01\"]'"
 	@echo "  make helm-apply RELEASE='kube-vip'"
 	@echo
@@ -147,6 +149,14 @@ status: ## Show lab status summary (Terraform state, Kubernetes nodes, Helm rele
 		else \
 			print_warn "metrics API not reachable (metrics-server missing or not ready)"; \
 		fi; \
+		if lb_services=$$(mise exec -- kubectl get svc -A --field-selector spec.type=LoadBalancer --no-headers 2>/dev/null); then \
+			lb_count=$$(printf "%s\n" "$$lb_services" | sed '/^$$/d' | wc -l | tr -d ' '); \
+			if [ "$$lb_count" -gt 0 ]; then \
+				print_info "loadbalancer services: $$lb_count"; \
+			else \
+				print_info "loadbalancer services: 0"; \
+			fi; \
+		fi; \
 		mise exec -- kubectl get nodes -o wide; \
 	else \
 		print_warn "API not reachable right now"; \
@@ -270,6 +280,15 @@ metrics-server-check: ## Check metrics-server rollout and metrics API status
 
 metrics-server-delete: ## Delete metrics-server Helm release
 	mise exec -- $(METRICS_SERVER_SCRIPT) delete
+
+metallb-apply: ## Apply MetalLB Helm release and address pool manifests
+	mise exec -- $(METALLB_SCRIPT) apply
+
+metallb-check: ## Check MetalLB rollout and address pool configuration
+	mise exec -- $(METALLB_SCRIPT) check
+
+metallb-delete: ## Delete MetalLB address pool manifests and Helm release
+	mise exec -- $(METALLB_SCRIPT) delete
 
 ansible-proxmox-bootstrap: ## Run Ansible Proxmox bootstrap tasks
 	@echo "Bootstrapping Proxmox host"

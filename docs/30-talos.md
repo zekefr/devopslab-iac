@@ -9,6 +9,7 @@
 - [Practical Notes](#practical-notes)
 - [Kube-VIP API HA](#kube-vip-api-ha)
 - [Metrics Server](#metrics-server)
+- [MetalLB](#metallb)
 
 ## Purpose
 
@@ -29,11 +30,15 @@ Talos automation is implemented with:
 - `scripts/talos-post-bootstrap.sh`
 - `scripts/kube-vip.sh`
 - `scripts/metrics-server.sh`
+- `scripts/metallb.sh`
 - `talos/cluster.local.env.example`
 - `kubernetes/helm/kube-vip/release.env`
 - `kubernetes/helm/kube-vip/values.lab.yaml`
 - `kubernetes/helm/metrics-server/release.env`
 - `kubernetes/helm/metrics-server/values.lab.yaml`
+- `kubernetes/helm/metallb/release.env`
+- `kubernetes/helm/metallb/values.lab.yaml`
+- `kubernetes/helm/metallb/ip-pool.lab.yaml`
 - `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-post-bootstrap`, `talos-all`
 
 Generated machine configs are written to:
@@ -191,4 +196,48 @@ Validation:
 kubectl get apiservice v1beta1.metrics.k8s.io
 kubectl top nodes
 kubectl top pods -A
+```
+
+## MetalLB
+
+This repository provides declarative Helm-based MetalLB configuration in:
+
+- `kubernetes/helm/metallb/release.env` (release metadata)
+- `kubernetes/helm/metallb/values.lab.yaml` (controller/speaker values)
+- `kubernetes/helm/metallb/ip-pool.lab.yaml` (IPAddressPool + L2Advertisement)
+
+Current defaults:
+
+- namespace: `metallb-system`
+- address pool: `192.168.1.230-192.168.1.239`
+- L2 advertisement mode
+
+Important:
+
+- reserve/exclude the MetalLB pool range from your DHCP server to avoid IP conflicts.
+- MetalLB speaker needs host networking/capabilities, so namespace `metallb-system` must run with Pod Security `privileged`.
+  `make metallb-apply` handles this automatically.
+
+Commands:
+
+```bash
+make helm-apply RELEASE='metallb'
+make helm-check RELEASE='metallb'
+make metallb-apply
+make metallb-check
+```
+
+Optional removal:
+
+```bash
+make metallb-delete
+```
+
+Validation:
+
+```bash
+kubectl -n metallb-system get deployment controller
+kubectl -n metallb-system get daemonset speaker
+kubectl -n metallb-system get ipaddresspool,l2advertisement
+kubectl get svc -A | grep LoadBalancer
 ```
