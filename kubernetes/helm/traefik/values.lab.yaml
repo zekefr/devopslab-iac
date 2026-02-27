@@ -1,0 +1,22 @@
+# Expose Traefik via MetalLB on a stable IP for ingress traffic.
+deployment:
+  kind: DaemonSet
+
+service:
+  type: LoadBalancer
+  spec:
+    loadBalancerIP: 192.168.1.230
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: traefik
+
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+
+logs:
+  access:
+    enabled: true

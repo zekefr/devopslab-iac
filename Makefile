@@ -10,7 +10,7 @@ METRICS_SERVER_SCRIPT=scripts/metrics-server.sh
 METALLB_SCRIPT=scripts/metallb.sh
 HELM_RELEASE_SCRIPT=scripts/helm-release.sh
 
-.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete metrics-server-apply metrics-server-check metrics-server-delete metallb-apply metallb-check metallb-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
+.PHONY: help doctor status list-releases pre-commit-install lint tf-init tf-validate tf-plan tf-apply tf-apply-auto tf-apply-replace talos-sync talos-generate talos-apply talos-bootstrap talos-post-bootstrap talos-all helm-apply helm-check helm-delete kube-vip-apply kube-vip-check kube-vip-recover kube-vip-delete metrics-server-apply metrics-server-check metrics-server-delete metallb-apply metallb-check metallb-delete traefik-apply traefik-check traefik-delete ansible-proxmox-bootstrap ansible-proxmox-upgrade ansible-proxmox-tweaks ansible-proxmox-tuning ansible-proxmox-hardening
 
 help: ## Show available make targets and usage examples
 	@echo "Usage: make <target>"
@@ -21,6 +21,7 @@ help: ## Show available make targets and usage examples
 	@echo "  make status"
 	@echo "  make metrics-server-apply"
 	@echo "  make metallb-apply"
+	@echo "  make traefik-apply"
 	@echo "  make tf-apply-replace REPLACE='module.talos_proxmox_cluster.proxmox_virtual_environment_vm.k8s_node[\"cpk8s01\"]'"
 	@echo "  make helm-apply RELEASE='kube-vip'"
 	@echo
@@ -289,6 +290,15 @@ metallb-check: ## Check MetalLB rollout and address pool configuration
 
 metallb-delete: ## Delete MetalLB address pool manifests and Helm release
 	mise exec -- $(METALLB_SCRIPT) delete
+
+traefik-apply: ## Apply Traefik Helm release
+	$(MAKE) helm-apply RELEASE='traefik'
+
+traefik-check: ## Check Traefik Helm release status
+	$(MAKE) helm-check RELEASE='traefik'
+
+traefik-delete: ## Delete Traefik Helm release
+	$(MAKE) helm-delete RELEASE='traefik'
 
 ansible-proxmox-bootstrap: ## Run Ansible Proxmox bootstrap tasks
 	@echo "Bootstrapping Proxmox host"

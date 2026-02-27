@@ -10,6 +10,7 @@
 - [Kube-VIP API HA](#kube-vip-api-ha)
 - [Metrics Server](#metrics-server)
 - [MetalLB](#metallb)
+- [Traefik Ingress](#traefik-ingress)
 
 ## Purpose
 
@@ -39,6 +40,8 @@ Talos automation is implemented with:
 - `kubernetes/helm/metallb/release.env`
 - `kubernetes/helm/metallb/values.lab.yaml`
 - `kubernetes/helm/metallb/ip-pool.lab.yaml`
+- `kubernetes/helm/traefik/release.env`
+- `kubernetes/helm/traefik/values.lab.yaml`
 - `make` targets: `talos-sync`, `talos-generate`, `talos-apply`, `talos-bootstrap`, `talos-post-bootstrap`, `talos-all`
 
 Generated machine configs are written to:
@@ -240,4 +243,40 @@ kubectl -n metallb-system get deployment controller
 kubectl -n metallb-system get daemonset speaker
 kubectl -n metallb-system get ipaddresspool,l2advertisement
 kubectl get svc -A | grep LoadBalancer
+```
+
+## Traefik Ingress
+
+This repository provides declarative Helm-based Traefik configuration in:
+
+- `kubernetes/helm/traefik/release.env` (release metadata)
+- `kubernetes/helm/traefik/values.lab.yaml` (environment values)
+
+Current defaults:
+
+- `DaemonSet` deployment
+- service type `LoadBalancer` (requires MetalLB)
+- fixed service IP: `192.168.1.230`
+- default ingress class set to `traefik`
+
+Commands:
+
+```bash
+make helm-apply RELEASE='traefik'
+make helm-check RELEASE='traefik'
+make traefik-apply
+make traefik-check
+```
+
+Optional removal:
+
+```bash
+make traefik-delete
+```
+
+Validation:
+
+```bash
+kubectl -n kube-system get svc traefik -o wide
+kubectl get ingressclass
 ```

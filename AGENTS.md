@@ -67,6 +67,10 @@ Current lint scope includes:
   - `make metallb-apply`
   - `make metallb-check`
   - `make metallb-delete`
+- Traefik ingress is managed with:
+  - `make traefik-apply`
+  - `make traefik-check`
+  - `make traefik-delete`
 - Helm releases should use the standardized release layout:
   - `kubernetes/helm/<release>/release.env`
   - `kubernetes/helm/<release>/values.lab.yaml`
@@ -95,6 +99,7 @@ Current implemented scope:
 - kube-vip API HA Helm values and operational workflow.
 - metrics-server Helm values and operational workflow.
 - MetalLB Helm values and operational workflow.
+- Traefik ingress Helm values and operational workflow.
 
 Do not invent or apply infrastructure outside this scope unless explicitly requested.
 

@@ -95,6 +95,7 @@ helm version --short
   - kube-vip API HA Helm workflow (`kube-vip-apply`, `kube-vip-check`, `kube-vip-recover`)
   - metrics-server Helm workflow (`metrics-server-apply`, `metrics-server-check`)
   - MetalLB Helm workflow (`metallb-apply`, `metallb-check`)
+  - Traefik ingress Helm workflow (`traefik-apply`, `traefik-check`)
   - generic Helm release workflow (`helm-apply`, `helm-check`, `helm-delete`)
 - Planned (not yet implemented): GitOps
 
